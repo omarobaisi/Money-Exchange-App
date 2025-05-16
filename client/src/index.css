@@ -1,0 +1,68 @@
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  direction: rtl;
+  background-color: #f5f5f5;
+}
+
+.rtl {
+  direction: rtl;
+}
+
+.ltr {
+  direction: ltr;
+}
+
+.arabic-text {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+/* For numeric inputs, keep LTR even in RTL mode */
+input[type="number"] {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Loading styles */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+}
+
+/* For inputs */
+input,
+textarea {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Fix for date pickers in RTL */
+.MuiPickersDay-root {
+  direction: ltr;
+}
+
+/* For cards and containers */
+.rtl-card {
+  direction: rtl;
+  text-align: right;
+}
+
+/* For tables */
+.MuiTableCell-root {
+  text-align: right;
+}

@@ -1,0 +1,106 @@
+{
+  "name": "money-exchange-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Frontend desktop application for Money Exchange built with React and Electron",
+  "dependencies": {
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@hookform/resolvers": "^5.0.1",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/material": "^5.13.2",
+    "@mui/x-data-grid": "^6.5.0",
+    "@mui/x-date-pickers": "^6.5.0",
+    "@tanstack/react-query": "^4.29.5",
+    "@tanstack/react-query-devtools": "^4.29.6",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.4.0",
+    "lodash.debounce": "^4.0.8",
+    "luxon": "^3.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.43.9",
+    "react-icons": "^4.8.0",
+    "react-router-dom": "^6.11.2",
+    "react-scripts": "5.0.1",
+    "stylis": "^4.3.6",
+    "stylis-plugin-rtl": "^2.1.1",
+    "web-vitals": "^2.1.4",
+    "yup": "^1.1.1"
+  },
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "dev": "vite",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:build": "vite build && electron-builder",
+    "electron:start": "electron .",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "concurrently": "^8.0.1",
+    "electron": "^23.1.3",
+    "electron-builder": "^23.6.0",
+    "electron-is-dev": "^2.0.0",
+    "vite": "^4.3.9",
+    "wait-on": "^7.0.1"
+  },
+  "main": "public/electron.js",
+  "build": {
+    "appId": "com.moneyexchange.app",
+    "productName": "Money Exchange",
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "package.json",
+      "public/electron.js",
+      "public/preload.js"
+    ],
+    "directories": {
+      "buildResources": "public"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "public/icon.ico"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "public/icon.icns"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "public/icon.png"
+    }
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
