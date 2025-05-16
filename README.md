@@ -53,7 +53,7 @@ money-exchange-app/
    ```
 3. Create a `.env` file based on `.env.example`:
    ```env
-   PORT=5000
+   PORT=4000
    DB_HOST=localhost
    DB_USER=root
    DB_PASSWORD=your_password
@@ -115,6 +115,9 @@ money-exchange-app/
   - Electron for desktop application packaging
   - React Router for navigation
   - Axios for API communication
+  - Tanstack Query for data fetching and caching
+  - React hook form for form management
+  - Yup for validation
 
 - **Backend (server/)**
   - Express.js server with ES modules
@@ -131,16 +134,18 @@ money-exchange-app/
 - Reports generation and export
 - Real-time exchange rate updates
 - Multi-currency support
+- Currencies exchange (Coming soon)
+- Earning calculations (Coming soon)
 
 ## API Documentation
 
-The API documentation is available at `http://localhost:5000/api-docs` when running in development mode.
+The API documentation is available at `http://localhost:4000/api-docs` when running in development mode. (Coming soon)
 
 ## Development
 
 - Frontend runs on: http://localhost:3000
-- Backend API runs on: http://localhost:5000
-- API Documentation: http://localhost:5000/api-docs
+- Backend API runs on: http://localhost:4000
+- API Documentation: http://localhost:4000/api-docs (Coming soon)
 
 ## Contributing
 
