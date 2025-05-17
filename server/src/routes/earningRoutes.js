@@ -13,6 +13,7 @@ import {
   deleteEarning,
   getEarningsByCurrency,
   getEarningsByType,
+  getTotalEarnings,
 } from "../controllers/earningController.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 
@@ -36,6 +37,27 @@ router.get("/", getAllEarnings);
 router.post("/", createEarning);
 
 /**
+ * @route GET /api/earnings/total
+ * @desc Get total earnings
+ * @access Private
+ */
+router.get("/total", getTotalEarnings);
+
+/**
+ * @route GET /api/earnings/reports/by-currency
+ * @desc Get earnings summary grouped by currency
+ * @access Private
+ */
+router.get("/reports/by-currency", getEarningsByCurrency);
+
+/**
+ * @route GET /api/earnings/reports/by-type
+ * @desc Get earnings summary grouped by type
+ * @access Private
+ */
+router.get("/reports/by-type", getEarningsByType);
+
+/**
  * @route GET /api/earnings/:id
  * @desc Get a specific earning by ID
  * @access Private
@@ -55,19 +77,5 @@ router.put("/:id", updateEarning);
  * @access Private
  */
 router.delete("/:id", deleteEarning);
-
-/**
- * @route GET /api/earnings/reports/by-currency
- * @desc Get earnings summary grouped by currency
- * @access Private
- */
-router.get("/reports/by-currency", getEarningsByCurrency);
-
-/**
- * @route GET /api/earnings/reports/by-type
- * @desc Get earnings summary grouped by type
- * @access Private
- */
-router.get("/reports/by-type", getEarningsByType);
 
 export default router;

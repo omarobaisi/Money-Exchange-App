@@ -325,3 +325,24 @@ export const getEarningsByType = async (req, res) => {
     });
   }
 };
+
+/**
+ * Get total earnings
+ */
+export const getTotalEarnings = async (req, res) => {
+  try {
+    const earnings = await Earning.findAll();
+    const total = earnings.reduce((sum, earning) => sum + earning.amount, 0);
+
+    res.json({
+      success: true,
+      total,
+    });
+  } catch (error) {
+    console.error("Error getting total earnings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error getting total earnings",
+    });
+  }
+};

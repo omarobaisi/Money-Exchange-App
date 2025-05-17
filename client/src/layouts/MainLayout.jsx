@@ -28,10 +28,13 @@ import {
   Settings as SettingsIcon,
   ExitToApp as LogoutIcon,
   Person as PersonIcon,
+  ChevronRight as ChevronRightIcon,
+  ChevronLeft as ChevronLeftIcon,
 } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
 
 const drawerWidth = 240;
+const collapsedDrawerWidth = 65;
 
 const menuItems = [
   { text: "لوحة التحكم", icon: <DashboardIcon />, path: "/" },
@@ -45,6 +48,7 @@ const menuItems = [
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser, logout } = useAuth();
@@ -77,13 +81,19 @@ export default function MainLayout() {
         sx={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "space-between",
           py: 1,
+          px: 1,
         }}
       >
-        <Typography variant="h6" component="div" className="arabic-text">
-          تطبيق صرافة
-        </Typography>
+        {drawerOpen && (
+          <Typography variant="h6" component="div" className="arabic-text">
+            تطبيق صرافة
+          </Typography>
+        )}
+        <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
+          {drawerOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+        </IconButton>
       </Toolbar>
       <Divider />
       <List>
@@ -92,12 +102,27 @@ export default function MainLayout() {
             <ListItemButton
               selected={location.pathname === item.path}
               onClick={() => handleNavigation(item.path)}
+              sx={{
+                minHeight: 48,
+                justifyContent: drawerOpen ? "initial" : "center",
+                px: 2.5,
+              }}
             >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                primaryTypographyProps={{ className: "arabic-text" }}
-              />
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: drawerOpen ? 3 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              {drawerOpen && (
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{ className: "arabic-text" }}
+                />
+              )}
             </ListItemButton>
           </ListItem>
         ))}
@@ -110,8 +135,14 @@ export default function MainLayout() {
       <AppBar
         position="fixed"
         sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mr: { sm: `${drawerWidth}px` },
+          width: {
+            sm: `calc(100% - ${
+              drawerOpen ? drawerWidth : collapsedDrawerWidth
+            }px)`,
+          },
+          mr: { sm: `${drawerOpen ? drawerWidth : collapsedDrawerWidth}px` },
+          transition: "width 0.2s, margin 0.2s",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
       >
         <Toolbar>
@@ -175,7 +206,15 @@ export default function MainLayout() {
 
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{
+          width: { sm: drawerOpen ? drawerWidth : collapsedDrawerWidth },
+          flexShrink: { sm: 0 },
+          position: "fixed",
+          right: 0,
+          top: 0,
+          bottom: 0,
+          zIndex: (theme) => theme.zIndex.drawer,
+        }}
         aria-label="mailbox folders"
       >
         <Drawer
@@ -184,7 +223,7 @@ export default function MainLayout() {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             display: { xs: "block", sm: "none" },
@@ -203,7 +242,12 @@ export default function MainLayout() {
             display: { xs: "none", sm: "block" },
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
-              width: drawerWidth,
+              width: drawerOpen ? drawerWidth : collapsedDrawerWidth,
+              transition: "width 0.2s",
+              overflowX: "hidden",
+              borderLeft: "1px solid rgba(0, 0, 0, 0.12)",
+              position: "fixed",
+              height: "100%",
             },
           }}
           open
@@ -217,8 +261,15 @@ export default function MainLayout() {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: {
+            sm: `calc(100% - ${
+              drawerOpen ? drawerWidth : collapsedDrawerWidth
+            }px)`,
+          },
           mt: 8,
+          transition: "width 0.2s",
+          ml: "auto",
+          mr: { sm: `${drawerOpen ? drawerWidth : collapsedDrawerWidth}px` },
         }}
       >
         <Outlet />

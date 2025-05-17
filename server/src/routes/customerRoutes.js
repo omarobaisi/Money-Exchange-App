@@ -12,6 +12,7 @@ import {
   getCustomerBalance,
   updateCustomerBalance,
   toggleCustomerStar,
+  getCustomersCount,
 } from "../controllers/customerController.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 
@@ -64,5 +65,12 @@ router.put(
  * @access Private
  */
 router.put("/:customerId/star", toggleCustomerStar);
+
+/**
+ * @route GET /api/customers/count
+ * @desc Get total number of customers
+ * @access Private
+ */
+router.get("/count", getCustomersCount);
 
 export default router;

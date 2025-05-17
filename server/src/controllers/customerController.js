@@ -220,3 +220,23 @@ export const toggleCustomerStar = async (req, res) => {
     });
   }
 };
+
+/**
+ * Get total number of customers
+ */
+export const getCustomersCount = async (req, res) => {
+  try {
+    const count = await Customer.count();
+
+    res.json({
+      success: true,
+      count,
+    });
+  } catch (error) {
+    console.error("Error getting customers count:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error getting customers count",
+    });
+  }
+};

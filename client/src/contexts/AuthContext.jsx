@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, useMemo } from "react";
 import axios from "axios";
 
 const AuthContext = createContext();
@@ -116,6 +116,10 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   };
 
+  const isProfileSetupCompleted = useMemo(() => {
+    return currentUser?.isInitialSetup;
+  }, [currentUser]);
+
   const value = {
     currentUser,
     isAuthenticated,
@@ -125,6 +129,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     checkAuthStatus,
+    isProfileSetupCompleted,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

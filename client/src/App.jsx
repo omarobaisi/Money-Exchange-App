@@ -7,6 +7,7 @@ import rtlPlugin from "stylis-plugin-rtl";
 import { prefixer } from "stylis";
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Layouts
 import MainLayout from "./layouts/MainLayout";
@@ -26,6 +27,7 @@ import Settings from "./pages/Settings";
 
 // Auth context
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import ProfileComplete from "./pages/ProfileComplete";
 
 // Create RTL cache
 const cacheRtl = createCache({
@@ -78,61 +80,71 @@ const theme = createTheme({
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-
+  const { isAuthenticated, loading, currentUser, isProfileSetupCompleted } =
+    useAuth();
+  console.log(currentUser);
   if (loading) return null;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+  console.log("isProfileSetupCompleted", isProfileSetupCompleted);
+  // if (isProfileSetupCompleted) {
+  //   return <Navigate to="/profile-complete" replace />;
+  // }
 
   return children;
 };
 
 function App() {
   return (
-    <AuthProvider>
-      <CacheProvider value={cacheRtl}>
-        <ThemeProvider theme={theme}>
-          <LocalizationProvider dateAdapter={AdapterLuxon}>
-            <CssBaseline />
-            <BrowserRouter>
-              <Routes>
-                {/* Auth Routes */}
-                <Route element={<AuthLayout />}>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                </Route>
-
-                {/* Protected Routes */}
-                <Route
-                  element={
-                    <ProtectedRoute>
-                      <MainLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/transactions" element={<Transactions />} />
+    <ErrorBoundary>
+      <AuthProvider>
+        <CacheProvider value={cacheRtl}>
+          <ThemeProvider theme={theme}>
+            <LocalizationProvider dateAdapter={AdapterLuxon}>
+              <CssBaseline />
+              <BrowserRouter>
+                <Routes>
+                  {/* Auth Routes */}
+                  <Route element={<AuthLayout />}>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                  </Route>
                   <Route
-                    path="/transaction/:type"
-                    element={<TransactionForm />}
+                    path="/profile-complete"
+                    element={<ProfileComplete />}
                   />
-                  <Route path="/clients" element={<Clients />} />
-                  <Route path="/clients/:id" element={<ClientDetails />} />
-                  <Route path="/earnings" element={<Earnings />} />
-                  <Route path="/settings" element={<Settings />} />
-                </Route>
+                  {/* Protected Routes */}
+                  <Route
+                    element={
+                      <ProtectedRoute>
+                        <MainLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/transactions" element={<Transactions />} />
+                    <Route
+                      path="/transaction/:type"
+                      element={<TransactionForm />}
+                    />
+                    <Route path="/clients" element={<Clients />} />
+                    <Route path="/clients/:id" element={<ClientDetails />} />
+                    <Route path="/earnings" element={<Earnings />} />
+                    <Route path="/settings" element={<Settings />} />
+                  </Route>
 
-                {/* Redirect for unknown routes */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </BrowserRouter>
-          </LocalizationProvider>
-        </ThemeProvider>
-      </CacheProvider>
-    </AuthProvider>
+                  {/* Redirect for unknown routes */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </BrowserRouter>
+            </LocalizationProvider>
+          </ThemeProvider>
+        </CacheProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

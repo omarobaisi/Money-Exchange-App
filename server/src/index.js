@@ -14,6 +14,9 @@ import { createDatabase } from "./config/database.js";
 import authRoutes from "./routes/authRoutes.js";
 import earningRoutes from "./routes/earningRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import currencyRoutes from "./routes/currencyRoutes.js";
+import customerRoutes from "./routes/customerRoutes.js";
+import transactionRoutes from "./routes/transactionRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -68,9 +71,9 @@ async function initializeDatabase() {
 app.use("/api/auth", authRoutes);
 app.use("/api/earnings", earningRoutes);
 app.use("/api/users", userRoutes);
-// app.use('/api/currencies', currencyRoutes);
-// app.use('/api/customers', customerRoutes);
-// app.use('/api/transactions', transactionRoutes);
+app.use("/api/currencies", currencyRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/transactions", transactionRoutes);
 
 // Health check route
 app.get("/health", async (req, res) => {

@@ -14,7 +14,7 @@ import { User } from "../models/index.js";
 export const getUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
-      attributes: ["_id", "username", "name", "role"],
+      attributes: ["_id", "username", "name", "role", "isInitialSetup"],
     });
 
     if (!user) {
@@ -31,6 +31,7 @@ export const getUser = async (req, res) => {
         username: user.username,
         name: user.name,
         role: user.role,
+        isInitialSetup: user.isInitialSetup,
       },
     });
   } catch (error) {
@@ -75,6 +76,7 @@ export const updateUser = async (req, res) => {
         username: user.username,
         name: user.name,
         role: user.role,
+        isInitialSetup: user.isInitialSetup,
       },
     });
   } catch (error) {

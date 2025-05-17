@@ -128,13 +128,19 @@ export default function Dashboard() {
     );
   }
 
-  // Calculate total balances
-  const totalCashBalance = currenciesData?.data
-    ? currenciesData.data.reduce((sum, item) => sum + item.balance, 0)
+  // Calculate total balances with proper type checking
+  const totalCashBalance = Array.isArray(currenciesData?.data)
+    ? currenciesData.data.reduce(
+        (sum, item) => sum + (Number(item.balance) || 0),
+        0
+      )
     : 0;
 
-  const totalCheckBalance = currenciesData?.data
-    ? currenciesData.data.reduce((sum, item) => sum + item.check_balance, 0)
+  const totalCheckBalance = Array.isArray(currenciesData?.data)
+    ? currenciesData.data.reduce(
+        (sum, item) => sum + (Number(item.check_balance) || 0),
+        0
+      )
     : 0;
 
   return (
@@ -178,7 +184,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatsCard
             title="إجمالي العملاء"
-            value={customersData?.count || 0}
+            value={(customersData?.count || 0).toLocaleString()}
             icon={<PeopleIcon sx={{ color: "success.main" }} />}
             color="success"
           />
@@ -186,7 +192,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatsCard
             title="إجمالي الأرباح"
-            value={earningsData?.total.toLocaleString() || 0}
+            value={(earningsData?.total || 0).toLocaleString()}
             icon={<EarningsIcon sx={{ color: "secondary.main" }} />}
             color="secondary"
           />
