@@ -42,6 +42,7 @@ const ProfileComplete = () => {
         ...newValue,
         isPrimary: false,
         balance: 0,
+        check_balance: 0,
       },
     ]);
   };
@@ -66,6 +67,17 @@ const ProfileComplete = () => {
       selectedCurrencies.map((c) =>
         c.code === code
           ? { ...c, balance: value === "" ? 0 : Number(value) }
+          : c
+      )
+    );
+  };
+
+  // Update check_balance for a currency
+  const handleCheckBalanceChange = (code, value) => {
+    setSelectedCurrencies(
+      selectedCurrencies.map((c) =>
+        c.code === code
+          ? { ...c, check_balance: value === "" ? 0 : Number(value) }
           : c
       )
     );
@@ -97,6 +109,7 @@ const ProfileComplete = () => {
           // Set company balance
           await currencyService.updateCompanyBalance(currencyId, {
             balance: currency.balance,
+            check_balance: currency.check_balance,
             star: currency.isPrimary,
           });
         }
@@ -212,6 +225,23 @@ const ProfileComplete = () => {
                               value={currency.balance}
                               onChange={(e) =>
                                 handleBalanceChange(
+                                  currency.code,
+                                  e.target.value
+                                )
+                              }
+                              InputProps={{
+                                inputProps: { min: 0, step: "0.01" },
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={5}>
+                            <TextField
+                              label={`رصيد الشيكات (${currency.symbol})`}
+                              type="number"
+                              fullWidth
+                              value={currency.check_balance}
+                              onChange={(e) =>
+                                handleCheckBalanceChange(
                                   currency.code,
                                   e.target.value
                                 )

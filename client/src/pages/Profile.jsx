@@ -38,13 +38,9 @@ const Profile = () => {
     data: balancesData,
     isLoading: balancesLoading,
     isError: balancesError,
-  } = useQuery(["companyBalances"], currencyService.getCompanyBalances, {
-    onSuccess: (data) => {
-      console.log("Company balances:", data);
-    },
-    onError: (error) => {
-      console.error("Error fetching balances:", error);
-    },
+  } = useQuery({
+    queryKey: ["companyBalances"],
+    queryFn: () => currencyService.getCompanyBalances(),
   });
 
   // Toggle star mutation
@@ -107,7 +103,6 @@ const Profile = () => {
   // Sort currencies - starred first, then alphabetically
   const sortCurrencies = (currencies) => {
     if (!currencies) return [];
-
     return [...currencies].sort((a, b) => {
       if (a.star && !b.star) return -1;
       if (!a.star && b.star) return 1;
@@ -131,7 +126,7 @@ const Profile = () => {
     );
   }
 
-  const currencies = sortCurrencies(balancesData?.data || []);
+  const currencies = sortCurrencies(balancesData?.data?.data || []);
 
   return (
     <Box>
@@ -237,7 +232,7 @@ const Profile = () => {
                       </Grid>
                     </Grid>
 
-                    <Button
+                    {/* <Button
                       variant="outlined"
                       startIcon={<EditIcon />}
                       size="small"
@@ -247,7 +242,7 @@ const Profile = () => {
                       className="arabic-text"
                     >
                       تعديل
-                    </Button>
+                    </Button> */}
                   </Box>
                 </CardContent>
               </Card>
