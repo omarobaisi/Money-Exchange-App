@@ -50,7 +50,7 @@ export const getUser = async (req, res) => {
  */
 export const updateUser = async (req, res) => {
   try {
-    const { username, name, password } = req.body;
+    const { username, name, password, isInitialSetup } = req.body;
 
     const user = await User.findByPk(req.user.id);
 
@@ -65,6 +65,7 @@ export const updateUser = async (req, res) => {
     if (username) user.username = username;
     if (name) user.name = name;
     if (password) user.password = password;
+    if (isInitialSetup !== undefined) user.isInitialSetup = isInitialSetup;
 
     await user.save();
 

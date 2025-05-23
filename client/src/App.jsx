@@ -80,18 +80,17 @@ const theme = createTheme({
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading, currentUser, isProfileSetupCompleted } =
-    useAuth();
-  console.log(currentUser);
+  const { isAuthenticated, loading, isProfileSetupCompleted } = useAuth();
+
   if (loading) return null;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  console.log("isProfileSetupCompleted", isProfileSetupCompleted);
-  // if (isProfileSetupCompleted) {
-  //   return <Navigate to="/profile-complete" replace />;
-  // }
+
+  if (!isProfileSetupCompleted) {
+    return <Navigate to="/profile-complete" replace />;
+  }
 
   return children;
 };

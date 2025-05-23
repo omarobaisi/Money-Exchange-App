@@ -117,7 +117,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isProfileSetupCompleted = useMemo(() => {
-    return currentUser?.isInitialSetup;
+    return !currentUser?.isInitialSetup;
   }, [currentUser]);
 
   const value = {

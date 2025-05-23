@@ -24,7 +24,7 @@ const schema = yup.object().shape({
     .required("اسم المستخدم مطلوب"),
   password: yup
     .string()
-    .min(6, "كلمة المرور يجب أن تكون على الأقل 6 أحرف")
+    .min(4, "كلمة المرور يجب أن تكون على الأقل 6 أحرف")
     .required("كلمة المرور مطلوبة"),
   confirmPassword: yup
     .string()

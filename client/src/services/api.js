@@ -31,9 +31,8 @@ export const currencyService = {
   deleteCurrency: (id) => axios.delete(`${API_URL}/currencies/${id}`),
   getCompanyBalances: () => axios.get(`${API_URL}/currencies/balances`),
   updateCompanyBalance: (id, data) =>
-    axios.put(`${API_URL}/currencies/balances/${id}`, data),
-  toggleCurrencyStar: (id) =>
-    axios.put(`${API_URL}/currencies/balances/${id}/star`),
+    axios.put(`${API_URL}/currencies/${id}/balance`, data),
+  toggleCurrencyStar: (id) => axios.put(`${API_URL}/currencies/${id}/star`),
 };
 
 // Customer Services

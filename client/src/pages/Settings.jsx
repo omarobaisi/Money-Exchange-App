@@ -27,7 +27,7 @@ const profileSchema = yup.object().shape({
   username: yup.string().required("اسم المستخدم مطلوب"),
   password: yup
     .string()
-    .min(6, "كلمة المرور يجب أن تكون على الأقل 6 أحرف")
+    .min(4, "كلمة المرور يجب أن تكون على الأقل 6 أحرف")
     .nullable(),
   confirmPassword: yup
     .string()
