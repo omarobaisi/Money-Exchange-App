@@ -13,6 +13,7 @@ import {
   updateCustomerBalance,
   toggleCustomerStar,
   getCustomersCount,
+  getCustomer,
 } from "../controllers/customerController.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 
@@ -27,6 +28,13 @@ router.use(authenticate);
  * @access Private
  */
 router.get("/", getAllCustomers);
+
+/**
+ * @route GET /api/customers/:id
+ * @desc Get a single customer by ID
+ * @access Private
+ */
+router.get("/:id", getCustomer);
 
 /**
  * @route POST /api/customers

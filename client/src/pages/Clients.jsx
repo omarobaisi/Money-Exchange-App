@@ -213,8 +213,8 @@ export default function Clients() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {clientsData?.data.length > 0 ? (
-                    clientsData.data.map((client) => (
+                  {clientsData?.data?.data?.length > 0 ? (
+                    clientsData.data?.data?.map((client) => (
                       <TableRow
                         key={client._id}
                         hover

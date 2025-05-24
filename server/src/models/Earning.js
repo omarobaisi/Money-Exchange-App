@@ -24,6 +24,14 @@ const Earning = sequelize.define(
         key: "_id",
       },
     },
+    transaction_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "transaction",
+        key: "_id",
+      },
+    },
     amount: {
       type: DataTypes.DECIMAL(15, 2),
       allowNull: false,

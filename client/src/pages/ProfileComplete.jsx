@@ -192,7 +192,7 @@ const ProfileComplete = () => {
                         sx={{ p: 2, position: "relative" }}
                       >
                         <Grid container spacing={2} alignItems="center">
-                          <Grid item xs={12} sm={5}>
+                          <Grid item xs={12} sm={4}>
                             <Box display="flex" alignItems="center">
                               <Chip
                                 label={currency.code}
@@ -217,41 +217,45 @@ const ProfileComplete = () => {
                               </Button>
                             </Box>
                           </Grid>
-                          <Grid item xs={12} sm={5}>
-                            <TextField
-                              label={`الرصيد (${currency.symbol})`}
-                              type="number"
-                              fullWidth
-                              value={currency.balance}
-                              onChange={(e) =>
-                                handleBalanceChange(
-                                  currency.code,
-                                  e.target.value
-                                )
-                              }
-                              InputProps={{
-                                inputProps: { min: 0, step: "0.01" },
-                              }}
-                            />
+                          <Grid item xs={12} sm={6}>
+                            <Grid container spacing={2}>
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  label={`الرصيد (${currency.symbol})`}
+                                  type="number"
+                                  fullWidth
+                                  value={currency.balance}
+                                  onChange={(e) =>
+                                    handleBalanceChange(
+                                      currency.code,
+                                      e.target.value
+                                    )
+                                  }
+                                  InputProps={{
+                                    inputProps: { min: 0, step: "0.01" },
+                                  }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  label={`رصيد الشيكات (${currency.symbol})`}
+                                  type="number"
+                                  fullWidth
+                                  value={currency.check_balance}
+                                  onChange={(e) =>
+                                    handleCheckBalanceChange(
+                                      currency.code,
+                                      e.target.value
+                                    )
+                                  }
+                                  InputProps={{
+                                    inputProps: { min: 0, step: "0.01" },
+                                  }}
+                                />
+                              </Grid>
+                            </Grid>
                           </Grid>
-                          <Grid item xs={12} sm={5}>
-                            <TextField
-                              label={`رصيد الشيكات (${currency.symbol})`}
-                              type="number"
-                              fullWidth
-                              value={currency.check_balance}
-                              onChange={(e) =>
-                                handleCheckBalanceChange(
-                                  currency.code,
-                                  e.target.value
-                                )
-                              }
-                              InputProps={{
-                                inputProps: { min: 0, step: "0.01" },
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={2}>
+                          <Grid item xs={12} sm={1}>
                             <Button
                               variant="outlined"
                               color="error"

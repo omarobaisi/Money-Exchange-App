@@ -13,6 +13,7 @@ import {
   Currency,
   MyCurrency,
   CustomerCurrency,
+  Earning,
 } from "../models/index.js";
 import { Op } from "sequelize";
 
@@ -114,10 +115,28 @@ export const createTransaction = async (req, res) => {
       { transaction }
     );
 
+    // Calculate commission amount if it's a check transaction
+    const isCheck = movement.includes("check");
+    let commissionAmount = 0;
+    if (isCheck && commission > 0) {
+      commissionAmount = amount * commission;
+
+      // Create earning record for commission
+      await Earning.create(
+        {
+          amount: commissionAmount,
+          currency_id: currencyId,
+          type: "commission",
+          description: `Commission for transaction #${newTransaction._id}`,
+          transaction_id: newTransaction._id,
+        },
+        { transaction }
+      );
+    }
+
     // Update balances based on movement type
     const isBuy = movement.includes("buy");
     const isCash = movement.includes("cash");
-    const isCheck = movement.includes("check");
     const isCollection = movement === "check-collection";
 
     // Update company balance
@@ -146,7 +165,7 @@ export const createTransaction = async (req, res) => {
     });
 
     // Calculate balance changes
-    const amountWithCommission = amount + commission;
+    const amountWithCommission = amount + commissionAmount;
 
     if (isBuy) {
       // Company buys from customer
@@ -164,15 +183,17 @@ export const createTransaction = async (req, res) => {
           { transaction }
         );
       } else if (isCheck) {
+        // For check transactions, handle both amount and commission
         await myCurrency.update(
           {
-            check_balance: myCurrency.check_balance + amount,
+            check_balance: myCurrency.check_balance + amountWithCommission, // Add both amount and commission
           },
           { transaction }
         );
         await customerCurrency.update(
           {
-            check_balance: customerCurrency.check_balance - amount,
+            check_balance:
+              customerCurrency.check_balance - amountWithCommission, // Subtract both amount and commission
           },
           { transaction }
         );
@@ -202,15 +223,17 @@ export const createTransaction = async (req, res) => {
           { transaction }
         );
       } else if (isCheck) {
+        // For check transactions, handle both amount and commission
         await myCurrency.update(
           {
-            check_balance: myCurrency.check_balance - amount,
+            check_balance: myCurrency.check_balance - amountWithCommission, // Subtract both amount and commission
           },
           { transaction }
         );
         await customerCurrency.update(
           {
-            check_balance: customerCurrency.check_balance + amount,
+            check_balance:
+              customerCurrency.check_balance + amountWithCommission, // Add both amount and commission
           },
           { transaction }
         );
@@ -289,6 +312,159 @@ export const getTransactionStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching transaction statistics",
+    });
+  }
+};
+
+/**
+ * Update a transaction and its associated earning
+ */
+export const updateTransaction = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const { id } = req.params;
+    const {
+      amount,
+      commission = 0,
+      note,
+      movement,
+      customerId,
+      currencyId,
+    } = req.body;
+
+    const existingTransaction = await Transaction.findOne({
+      where: { _id: id },
+    });
+
+    if (!existingTransaction) {
+      return res.status(404).json({
+        success: false,
+        message: "Transaction not found",
+      });
+    }
+
+    // Update transaction
+    await existingTransaction.update(
+      {
+        amount,
+        commission,
+        note,
+        movement,
+        customer_id: customerId,
+        currency_id: currencyId,
+      },
+      { transaction }
+    );
+
+    // Handle commission earning
+    const isCheck = movement.includes("check");
+    const existingEarning = await Earning.findOne({
+      where: { transaction_id: id },
+    });
+
+    if (isCheck && commission > 0) {
+      const commissionAmount = amount * commission;
+
+      if (existingEarning) {
+        // Update existing earning
+        await existingEarning.update(
+          {
+            amount: commissionAmount,
+            currency_id: currencyId,
+          },
+          { transaction }
+        );
+      } else {
+        // Create new earning
+        await Earning.create(
+          {
+            amount: commissionAmount,
+            currency_id: currencyId,
+            type: "commission",
+            description: `Commission for transaction #${id}`,
+            transaction_id: id,
+          },
+          { transaction }
+        );
+      }
+    } else if (existingEarning) {
+      // Delete earning if transaction is no longer a check transaction
+      await existingEarning.destroy({ transaction });
+    }
+
+    await transaction.commit();
+
+    // Fetch updated transaction with related data
+    const updatedTransaction = await Transaction.findOne({
+      where: { _id: id },
+      include: [
+        {
+          model: Customer,
+          as: "customer",
+        },
+        {
+          model: Currency,
+          as: "currency",
+        },
+      ],
+    });
+
+    res.json({
+      success: true,
+      data: updatedTransaction,
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Error updating transaction:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating transaction",
+    });
+  }
+};
+
+/**
+ * Delete a transaction and its associated earning
+ */
+export const deleteTransaction = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const { id } = req.params;
+
+    const existingTransaction = await Transaction.findOne({
+      where: { _id: id },
+    });
+
+    if (!existingTransaction) {
+      return res.status(404).json({
+        success: false,
+        message: "Transaction not found",
+      });
+    }
+
+    // Delete associated earning if exists
+    await Earning.destroy({
+      where: { transaction_id: id },
+      transaction,
+    });
+
+    // Delete transaction
+    await existingTransaction.destroy({ transaction });
+
+    await transaction.commit();
+
+    res.json({
+      success: true,
+      message: "Transaction deleted successfully",
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Error deleting transaction:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting transaction",
     });
   }
 };

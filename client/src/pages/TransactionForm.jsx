@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -9,13 +9,7 @@ import {
   TextField,
   Button,
   MenuItem,
-  CircularProgress,
   Alert,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
   InputAdornment,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -70,22 +64,10 @@ const transactionSchema = yup.object().shape({
   note: yup.string(),
 });
 
-// Customer Form schema
-const customerSchema = yup.object().shape({
-  name: yup.string().required("اسم الزبون مطلوب"),
-});
-
-// Currency Form schema
-const currencySchema = yup.object().shape({
-  currency: yup.string().required("اسم العملة مطلوب"),
-});
-
 const TransactionForm = () => {
   const { type } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [newCustomerDialogOpen, setNewCustomerDialogOpen] = useState(false);
-  const [newCurrencyDialogOpen, setNewCurrencyDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -94,8 +76,6 @@ const TransactionForm = () => {
     register,
     handleSubmit,
     control,
-    reset,
-    setValue,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(transactionSchema),
@@ -107,26 +87,6 @@ const TransactionForm = () => {
       date: DateTime.now(),
       note: "",
     },
-  });
-
-  // Customer form
-  const {
-    register: registerCustomer,
-    handleSubmit: handleSubmitCustomer,
-    reset: resetCustomer,
-    formState: { errors: errorsCustomer },
-  } = useForm({
-    resolver: yupResolver(customerSchema),
-  });
-
-  // Currency form
-  const {
-    register: registerCurrency,
-    handleSubmit: handleSubmitCurrency,
-    reset: resetCurrency,
-    formState: { errors: errorsCurrency },
-  } = useForm({
-    resolver: yupResolver(currencySchema),
   });
 
   // Get transaction type details
@@ -164,38 +124,6 @@ const TransactionForm = () => {
     }
   );
 
-  // Create customer mutation
-  const createCustomerMutation = useMutation(
-    (data) => customerService.createCustomer(data),
-    {
-      onSuccess: (response) => {
-        queryClient.invalidateQueries(["customers"]);
-        setValue("customerId", response.data.data._id);
-        handleCloseNewCustomerDialog();
-      },
-      onError: (error) => {
-        setError("حدث خطأ أثناء إنشاء الزبون الجديد. يرجى المحاولة مرة أخرى.");
-        console.error("Error creating customer:", error);
-      },
-    }
-  );
-
-  // Create currency mutation
-  const createCurrencyMutation = useMutation(
-    (data) => currencyService.createCurrency(data),
-    {
-      onSuccess: (response) => {
-        queryClient.invalidateQueries(["currencies"]);
-        setValue("currencyId", response.data.data._id);
-        handleCloseNewCurrencyDialog();
-      },
-      onError: (error) => {
-        setError("حدث خطأ أثناء إنشاء العملة الجديدة. يرجى المحاولة مرة أخرى.");
-        console.error("Error creating currency:", error);
-      },
-    }
-  );
-
   const onSubmit = (data) => {
     setLoading(true);
     setError("");
@@ -211,24 +139,6 @@ const TransactionForm = () => {
     };
 
     createTransactionMutation.mutate(formattedData);
-  };
-
-  const handleCloseNewCustomerDialog = () => {
-    setNewCustomerDialogOpen(false);
-    resetCustomer();
-  };
-
-  const handleCloseNewCurrencyDialog = () => {
-    setNewCurrencyDialogOpen(false);
-    resetCurrency();
-  };
-
-  const handleCreateNewCustomer = (data) => {
-    createCustomerMutation.mutate(data);
-  };
-
-  const handleCreateNewCurrency = (data) => {
-    createCurrencyMutation.mutate(data);
   };
 
   return (
@@ -259,73 +169,53 @@ const TransactionForm = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
-              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
-                <Controller
-                  name="customerId"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      select
-                      fullWidth
-                      label="اسم الزبون"
-                      error={!!errors.customerId}
-                      helperText={errors.customerId?.message}
-                      disabled={customersLoading}
-                      InputLabelProps={{ className: "arabic-text" }}
-                    >
-                      {customersData?.data.map((customer) => (
-                        <MenuItem key={customer._id} value={customer._id}>
-                          {customer.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  )}
-                />
-                <Button
-                  variant="outlined"
-                  onClick={() => setNewCustomerDialogOpen(true)}
-                  className="arabic-text"
-                  sx={{ height: "56px", whiteSpace: "nowrap" }}
-                >
-                  جديد +
-                </Button>
-              </Box>
+              <Controller
+                name="customerId"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    select
+                    fullWidth
+                    label="اسم الزبون"
+                    error={!!errors.customerId}
+                    helperText={errors.customerId?.message}
+                    disabled={customersLoading}
+                    InputLabelProps={{ className: "arabic-text" }}
+                  >
+                    {customersData?.data?.data.map((customer) => (
+                      <MenuItem key={customer._id} value={customer._id}>
+                        {customer.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
-                <Controller
-                  name="currencyId"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      select
-                      fullWidth
-                      label="العملة"
-                      error={!!errors.currencyId}
-                      helperText={errors.currencyId?.message}
-                      disabled={currenciesLoading}
-                      InputLabelProps={{ className: "arabic-text" }}
-                    >
-                      {currenciesData?.data.map((currency) => (
-                        <MenuItem key={currency._id} value={currency._id}>
-                          {currency.currency}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  )}
-                />
-                <Button
-                  variant="outlined"
-                  onClick={() => setNewCurrencyDialogOpen(true)}
-                  className="arabic-text"
-                  sx={{ height: "56px", whiteSpace: "nowrap" }}
-                >
-                  جديد +
-                </Button>
-              </Box>
+              <Controller
+                name="currencyId"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    select
+                    fullWidth
+                    label="العملة"
+                    error={!!errors.currencyId}
+                    helperText={errors.currencyId?.message}
+                    disabled={currenciesLoading}
+                    InputLabelProps={{ className: "arabic-text" }}
+                  >
+                    {currenciesData?.data?.data?.map((currency) => (
+                      <MenuItem key={currency._id} value={currency._id}>
+                        {currency.currency}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
             </Grid>
 
             <Grid item xs={12} sm={6}>
@@ -343,20 +233,25 @@ const TransactionForm = () => {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="العمولة"
-                type="number"
-                error={!!errors.commission}
-                helperText={errors.commission?.message}
-                {...register("commission")}
-                InputLabelProps={{ className: "arabic-text" }}
-                InputProps={{
-                  inputProps: { min: 0, step: 0.01 },
-                }}
-              />
-            </Grid>
+            {(type === "buy-check" || type === "sell-check") && (
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="نسبة العمولة"
+                  type="number"
+                  error={!!errors.commission}
+                  helperText={errors.commission?.message}
+                  {...register("commission")}
+                  InputLabelProps={{ className: "arabic-text" }}
+                  InputProps={{
+                    inputProps: { min: 0, max: 1, step: 0.01 },
+                    endAdornment: (
+                      <InputAdornment position="end">%</InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+            )}
 
             <Grid item xs={12} sm={6}>
               <Controller
@@ -419,94 +314,6 @@ const TransactionForm = () => {
           </Grid>
         </form>
       </Paper>
-
-      {/* New Customer Dialog */}
-      <Dialog
-        open={newCustomerDialogOpen}
-        onClose={handleCloseNewCustomerDialog}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle className="arabic-text">إضافة زبون جديد</DialogTitle>
-        <DialogContent>
-          <form
-            id="new-customer-form"
-            onSubmit={handleSubmitCustomer(handleCreateNewCustomer)}
-          >
-            <TextField
-              fullWidth
-              margin="dense"
-              label="اسم الزبون"
-              error={!!errorsCustomer.name}
-              helperText={errorsCustomer.name?.message}
-              {...registerCustomer("name")}
-              InputLabelProps={{ className: "arabic-text" }}
-              autoFocus
-            />
-          </form>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseNewCustomerDialog}
-            className="arabic-text"
-          >
-            إلغاء
-          </Button>
-          <Button
-            type="submit"
-            form="new-customer-form"
-            disabled={createCustomerMutation.isLoading}
-            className="arabic-text"
-            color="primary"
-          >
-            {createCustomerMutation.isLoading ? "جاري الإضافة..." : "إضافة"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* New Currency Dialog */}
-      <Dialog
-        open={newCurrencyDialogOpen}
-        onClose={handleCloseNewCurrencyDialog}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle className="arabic-text">إضافة عملة جديدة</DialogTitle>
-        <DialogContent>
-          <form
-            id="new-currency-form"
-            onSubmit={handleSubmitCurrency(handleCreateNewCurrency)}
-          >
-            <TextField
-              fullWidth
-              margin="dense"
-              label="اسم العملة"
-              error={!!errorsCurrency.currency}
-              helperText={errorsCurrency.currency?.message}
-              {...registerCurrency("currency")}
-              InputLabelProps={{ className: "arabic-text" }}
-              autoFocus
-            />
-          </form>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseNewCurrencyDialog}
-            className="arabic-text"
-          >
-            إلغاء
-          </Button>
-          <Button
-            type="submit"
-            form="new-currency-form"
-            disabled={createCurrencyMutation.isLoading}
-            className="arabic-text"
-            color="primary"
-          >
-            {createCurrencyMutation.isLoading ? "جاري الإضافة..." : "إضافة"}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

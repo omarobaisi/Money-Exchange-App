@@ -240,3 +240,45 @@ export const getCustomersCount = async (req, res) => {
     });
   }
 };
+
+/**
+ * Get a single customer by ID
+ */
+export const getCustomer = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const customer = await Customer.findByPk(id, {
+      include: [
+        {
+          model: CustomerCurrency,
+          as: "currencies",
+          include: [
+            {
+              model: Currency,
+              as: "currency",
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Customer not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: customer,
+    });
+  } catch (error) {
+    console.error("Error fetching customer:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching customer",
+    });
+  }
+};

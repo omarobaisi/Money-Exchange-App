@@ -159,7 +159,6 @@ export default function ClientDetails() {
     queryKey: ["currencies"],
     queryFn: currencyService.getAllCurrencies,
   });
-
   // Update client mutation
   const updateClientMutation = useMutation({
     mutationFn: (data) => customerService.updateCustomer(id, data),
@@ -196,7 +195,7 @@ export default function ClientDetails() {
   const handleEditToggle = () => {
     setEditMode(!editMode);
     if (!editMode) {
-      setNameValue("name", clientData?.data.name || "");
+      setNameValue("name", clientData?.data?.data?.name || "");
     }
   };
 
@@ -284,7 +283,7 @@ export default function ClientDetails() {
         ) : (
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Typography variant="h4" component="h1" className="arabic-text">
-              {clientData?.data.name || ""}
+              {clientData?.data?.data?.name || ""}
             </Typography>
             <IconButton size="small" onClick={handleEditToggle}>
               <EditIcon />
@@ -298,7 +297,7 @@ export default function ClientDetails() {
         >
           تاريخ الإضافة:{" "}
           {new Date(
-            clientData?.data.created || new Date()
+            clientData?.data?.data?.created || new Date()
           ).toLocaleDateString()}
         </Typography>
       </Box>
@@ -320,7 +319,7 @@ export default function ClientDetails() {
                     إحصائيات العميل
                   </Typography>
                   <Typography variant="body1" className="arabic-text">
-                    عدد العملات: {balancesData?.data.length || 0}
+                    عدد العملات: {balancesData?.data?.data?.length || 0}
                   </Typography>
                   <Typography variant="body1" className="arabic-text">
                     عدد المعاملات: {transactionsData?.pagination?.total || 0}
@@ -405,7 +404,7 @@ export default function ClientDetails() {
             </Button>
           </Box>
 
-          {balancesData?.data.length > 0 ? (
+          {balancesData?.data?.data?.length > 0 ? (
             <TableContainer>
               <Table>
                 <TableHead>
@@ -467,7 +466,7 @@ export default function ClientDetails() {
             معاملات العميل
           </Typography>
 
-          {transactionsData?.data.length > 0 ? (
+          {transactionsData?.data?.data?.length > 0 ? (
             <TableContainer>
               <Table>
                 <TableHead>
@@ -549,10 +548,10 @@ export default function ClientDetails() {
               InputLabelProps={{ className: "arabic-text" }}
               {...registerCurrency("currencyId")}
             >
-              {currenciesData?.data
-                .filter(
+              {currenciesData?.data?.data
+                ?.filter(
                   (currency) =>
-                    !balancesData?.data.some(
+                    !balancesData?.data?.data?.some(
                       (balance) => balance.currency_id === currency._id
                     )
                 )
