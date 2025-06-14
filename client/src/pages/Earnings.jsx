@@ -271,7 +271,7 @@ const Earnings = () => {
                       disabled={currenciesLoading}
                       InputLabelProps={{ className: "arabic-text" }}
                     >
-                      {currenciesData?.data.map((currency) => (
+                      {currenciesData?.data?.data?.map((currency) => (
                         <MenuItem key={currency._id} value={currency._id}>
                           {currency.currency}
                         </MenuItem>
@@ -418,7 +418,7 @@ const Earnings = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {earningsData?.data.map((earning) => (
+                    {earningsData?.data?.data?.map((earning) => (
                       <TableRow key={earning._id}>
                         <TableCell>{earning.currency.currency}</TableCell>
                         <TableCell>
@@ -491,7 +491,7 @@ const Earnings = () => {
             </Box>
           ) : (
             <Grid container spacing={3} sx={{ mt: 1 }}>
-              {earningsByCurrency?.data.map((item) => (
+              {earningsByCurrency?.data?.data?.map((item) => (
                 <Grid item xs={12} sm={6} md={4} key={item.currency_id}>
                   <Card elevation={3}>
                     <CardContent>

@@ -280,7 +280,7 @@ const Transactions = () => {
                     <MenuItem value="">
                       <em>الكل</em>
                     </MenuItem>
-                    {customersData?.data.map((customer) => (
+                    {customersData?.data?.data?.map((customer) => (
                       <MenuItem key={customer._id} value={customer._id}>
                         {customer.name}
                       </MenuItem>
@@ -301,7 +301,7 @@ const Transactions = () => {
                     <MenuItem value="">
                       <em>الكل</em>
                     </MenuItem>
-                    {currenciesData?.data.map((currency) => (
+                    {currenciesData?.data?.data?.map((currency) => (
                       <MenuItem key={currency._id} value={currency._id}>
                         {currency.currency}
                       </MenuItem>
@@ -403,7 +403,7 @@ const Transactions = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {transactionsData?.data.map((transaction) => (
+                  {transactionsData?.data?.data?.map((transaction) => (
                     <TableRow key={transaction._id}>
                       <TableCell>
                         <Link to={`/clients/${transaction.customer._id}`}>
@@ -448,7 +448,7 @@ const Transactions = () => {
                     </TableRow>
                   ))}
 
-                  {transactionsData?.data.length === 0 && (
+                  {transactionsData?.data?.data?.length === 0 && (
                     <TableRow>
                       <TableCell
                         colSpan={8}

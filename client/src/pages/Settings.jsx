@@ -75,7 +75,9 @@ export default function Settings() {
       }, 3000);
     },
     onError: (err) => {
-      setError(err.response?.data?.message || "حدث خطأ أثناء تحديث البيانات");
+      setError(
+        err.response?.data?.data?.message || "حدث خطأ أثناء تحديث البيانات"
+      );
       setTimeout(() => {
         setError("");
       }, 3000);

@@ -129,15 +129,15 @@ export default function Dashboard() {
   }
 
   // Calculate total balances with proper type checking
-  const totalCashBalance = Array.isArray(currenciesData?.data)
-    ? currenciesData.data.reduce(
+  const totalCashBalance = Array.isArray(currenciesData?.data?.data)
+    ? currenciesData.data.data.reduce(
         (sum, item) => sum + (Number(item.balance) || 0),
         0
       )
     : 0;
 
-  const totalCheckBalance = Array.isArray(currenciesData?.data)
-    ? currenciesData.data.reduce(
+  const totalCheckBalance = Array.isArray(currenciesData?.data?.data)
+    ? currenciesData.data.data.reduce(
         (sum, item) => sum + (Number(item.check_balance) || 0),
         0
       )
@@ -234,8 +234,8 @@ export default function Dashboard() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {transactionsData?.data.length > 0 ? (
-                transactionsData.data.map((transaction) => (
+              {transactionsData?.data?.data?.length > 0 ? (
+                transactionsData?.data?.data?.map((transaction) => (
                   <TableRow key={transaction._id}>
                     <TableCell>{transaction.customer.name}</TableCell>
                     <TableCell>{transaction.currency.currency}</TableCell>

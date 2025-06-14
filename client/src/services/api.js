@@ -45,7 +45,10 @@ export const customerService = {
   deleteCustomer: (id) => axios.delete(`${API_URL}/customers/${id}`),
   getCustomerBalances: (id) => axios.get(`${API_URL}/customers/${id}/balances`),
   updateCustomerBalance: (id, currencyId, data) =>
-    axios.put(`${API_URL}/customers/${id}/balances/${currencyId}`, data),
+    axios.put(
+      `${API_URL}/customers/${id}/currencies/${currencyId}/balance`,
+      data
+    ),
   toggleCustomerCurrencyStar: (id, currencyId) =>
     axios.put(`${API_URL}/customers/${id}/balances/${currencyId}/star`),
 };

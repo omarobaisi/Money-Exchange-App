@@ -14,6 +14,7 @@ import {
   MyCurrency,
   CustomerCurrency,
   Earning,
+  sequelize,
 } from "../models/index.js";
 import { Op } from "sequelize";
 

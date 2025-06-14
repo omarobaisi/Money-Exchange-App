@@ -133,7 +133,7 @@ const ProfileComplete = () => {
       }, 2000);
     } catch (err) {
       console.error("Profile setup failed:", err);
-      setError(err.response?.data?.message || "فشل في إعداد الحساب");
+      setError(err.response?.data?.data?.message || "فشل في إعداد الحساب");
     } finally {
       setLoading(false);
     }

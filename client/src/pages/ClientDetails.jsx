@@ -416,7 +416,7 @@ export default function ClientDetails() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {balancesData.data.map((balance) => (
+                  {balancesData?.data?.data?.map((balance) => (
                     <TableRow key={balance.currency_id}>
                       <TableCell className="arabic-text">
                         <Box
@@ -479,7 +479,7 @@ export default function ClientDetails() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {transactionsData.data.map((transaction) => (
+                  {transactionsData?.data?.data?.map((transaction) => (
                     <TableRow key={transaction._id}>
                       <TableCell>{transaction.currency.currency}</TableCell>
                       <TableCell>

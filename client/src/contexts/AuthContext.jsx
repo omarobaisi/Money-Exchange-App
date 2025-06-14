@@ -64,19 +64,19 @@ export const AuthProvider = ({ children }) => {
         password,
       });
 
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
+      if (response?.data?.data?.token) {
+        localStorage.setItem("token", response.data.data.token);
         axios.defaults.headers.common[
           "Authorization"
-        ] = `Bearer ${response.data.token}`;
+        ] = `Bearer ${response.data.data.token}`;
 
-        setCurrentUser(response.data.user);
+        setCurrentUser(response.data.data.user);
         setIsAuthenticated(true);
         return true;
       }
     } catch (err) {
       console.error("Login failed:", err);
-      setError(err.response?.data?.message || "فشل تسجيل الدخول");
+      setError(err.response?.data?.data?.message || "فشل تسجيل الدخول");
       return false;
     } finally {
       setLoading(false);
@@ -90,19 +90,19 @@ export const AuthProvider = ({ children }) => {
 
       const response = await axios.post("/api/auth/register", userData);
 
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
+      if (response.data.data.token) {
+        localStorage.setItem("token", response.data.data.token);
         axios.defaults.headers.common[
           "Authorization"
-        ] = `Bearer ${response.data.token}`;
+        ] = `Bearer ${response.data.data.token}`;
 
-        setCurrentUser(response.data.user);
+        setCurrentUser(response.data.data.user);
         setIsAuthenticated(true);
         return true;
       }
     } catch (err) {
       console.error("Registration failed:", err);
-      setError(err.response?.data?.message || "فشل انشاء الحساب");
+      setError(err.response?.data?.data?.message || "فشل انشاء الحساب");
       return false;
     } finally {
       setLoading(false);

@@ -68,7 +68,6 @@ const TransactionForm = () => {
   const { type } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Transaction form
@@ -125,20 +124,22 @@ const TransactionForm = () => {
   );
 
   const onSubmit = (data) => {
-    setLoading(true);
-    setError("");
-
-    const formattedData = {
-      customerId: data.customerId,
-      currencyId: data.currencyId,
-      amount: parseFloat(data.amount),
-      commission: parseFloat(data.commission || 0),
-      date: data.date.toISO(),
-      note: data.note,
-      movement: transactionTypeDetails.movement,
-    };
-
-    createTransactionMutation.mutate(formattedData);
+    try {
+      setError("");
+      const formattedData = {
+        customerId: data.customerId,
+        currencyId: data.currencyId,
+        amount: parseFloat(data.amount),
+        commission: parseFloat(data.commission || 0),
+        date: DateTime.fromJSDate(data.date).toISO(),
+        note: data.note,
+        movement: transactionTypeDetails.movement,
+      };
+      createTransactionMutation.mutate(formattedData);
+    } catch (error) {
+      console.log(error);
+      setError("حدث خطأ أثناء إنشاء المعاملة. يرجى المحاولة مرة أخرى.");
+    }
   };
 
   return (
@@ -302,11 +303,11 @@ const TransactionForm = () => {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={loading || createTransactionMutation.isLoading}
+                disabled={createTransactionMutation.isLoading}
                 className="arabic-text"
                 color="primary"
               >
-                {loading || createTransactionMutation.isLoading
+                {createTransactionMutation.isLoading
                   ? "جاري الإنشاء..."
                   : "إنشاء معاملة"}
               </Button>
