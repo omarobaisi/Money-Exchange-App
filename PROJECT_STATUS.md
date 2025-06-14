@@ -22,13 +22,12 @@
 
 ### Transaction System (Partially Complete)
 
-- 🔄 Transaction form implementation
-- 🔄 Support for multiple transaction types:
+- ✅ Transaction form implementation
+- ✅ Support for multiple transaction types:
   - Buy/Sell (Cash/Check)
   - Check collection
-- 🔄 Commission calculation for check transactions
-- 🔄 Basic transaction validation
-- 🔄 Transaction creation with balance updates
+- ✅ Commission calculation for check transactions
+- 🔄 Transaction creation with balance updates (Need a check for main account balance update)
 
 ### Client Management
 
