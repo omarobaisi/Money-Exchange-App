@@ -121,7 +121,6 @@ export const createTransaction = async (req, res) => {
     let commissionAmount = 0;
     if (isCheck && commission > 0) {
       commissionAmount = amount * commission;
-
       // Create earning record for commission
       await Earning.create(
         {
@@ -150,6 +149,8 @@ export const createTransaction = async (req, res) => {
       },
       transaction,
     });
+    const myBalance = parseFloat(myCurrency.balance);
+    const myCheckBalance = parseFloat(myCurrency.check_balance);
 
     // Update customer balance
     const [customerCurrency] = await CustomerCurrency.findOrCreate({
@@ -164,6 +165,8 @@ export const createTransaction = async (req, res) => {
       },
       transaction,
     });
+    const custBalance = parseFloat(customerCurrency.balance);
+    const custCheckBalance = parseFloat(customerCurrency.check_balance);
 
     // Calculate balance changes
     const amountWithCommission = amount + commissionAmount;
@@ -173,13 +176,13 @@ export const createTransaction = async (req, res) => {
       if (isCash) {
         await myCurrency.update(
           {
-            balance: myCurrency.balance + amount,
+            balance: myBalance + amount,
           },
           { transaction }
         );
         await customerCurrency.update(
           {
-            balance: customerCurrency.balance - amount,
+            balance: custBalance - amount,
           },
           { transaction }
         );
@@ -187,14 +190,13 @@ export const createTransaction = async (req, res) => {
         // For check transactions, handle both amount and commission
         await myCurrency.update(
           {
-            check_balance: myCurrency.check_balance + amountWithCommission, // Add both amount and commission
+            check_balance: myCheckBalance + amountWithCommission, // Add both amount and commission
           },
           { transaction }
         );
         await customerCurrency.update(
           {
-            check_balance:
-              customerCurrency.check_balance - amountWithCommission, // Subtract both amount and commission
+            check_balance: custCheckBalance - amountWithCommission, // Subtract both amount and commission
           },
           { transaction }
         );
@@ -203,8 +205,8 @@ export const createTransaction = async (req, res) => {
       // Check collection
       await myCurrency.update(
         {
-          balance: myCurrency.balance + amount,
-          check_balance: myCurrency.check_balance - amount,
+          balance: myBalance + amount,
+          check_balance: myCheckBalance - amount,
         },
         { transaction }
       );
@@ -213,13 +215,13 @@ export const createTransaction = async (req, res) => {
       if (isCash) {
         await myCurrency.update(
           {
-            balance: myCurrency.balance - amount,
+            balance: myBalance - amount,
           },
           { transaction }
         );
         await customerCurrency.update(
           {
-            balance: customerCurrency.balance + amount,
+            balance: custBalance + amount,
           },
           { transaction }
         );
@@ -227,14 +229,13 @@ export const createTransaction = async (req, res) => {
         // For check transactions, handle both amount and commission
         await myCurrency.update(
           {
-            check_balance: myCurrency.check_balance - amountWithCommission, // Subtract both amount and commission
+            check_balance: myCheckBalance - amountWithCommission, // Subtract both amount and commission
           },
           { transaction }
         );
         await customerCurrency.update(
           {
-            check_balance:
-              customerCurrency.check_balance + amountWithCommission, // Add both amount and commission
+            check_balance: custCheckBalance + amountWithCommission, // Add both amount and commission
           },
           { transaction }
         );

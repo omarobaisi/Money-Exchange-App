@@ -27,7 +27,7 @@
   - Buy/Sell (Cash/Check)
   - Check collection
 - ✅ Commission calculation for check transactions
-- 🔄 Transaction creation with balance updates (Need a check for main account balance update)
+- ✅ Transaction creation with balance updates (Need a check for main account balance update)
 
 ### Client Management
 
