@@ -64,13 +64,13 @@ export const AuthProvider = ({ children }) => {
         password,
       });
 
-      if (response?.data?.data?.token) {
-        localStorage.setItem("token", response.data.data.token);
+      if (response?.data?.token) {
+        localStorage.setItem("token", response.data.token);
         axios.defaults.headers.common[
           "Authorization"
-        ] = `Bearer ${response.data.data.token}`;
+        ] = `Bearer ${response.data.token}`;
 
-        setCurrentUser(response.data.data.user);
+        setCurrentUser(response.data.user);
         setIsAuthenticated(true);
         return true;
       }
