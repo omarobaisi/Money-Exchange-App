@@ -18,8 +18,6 @@
 - ✅ Support for both cash and check balances
 - ✅ Currency star/favorite functionality
 
-## In Progress
-
 ### Transaction System (Partially Complete)
 
 - ✅ Transaction form implementation
