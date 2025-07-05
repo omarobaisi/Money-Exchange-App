@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -67,20 +67,16 @@ export default function Clients() {
 
   // Fetch clients
   const {
-    data: clientsData,
+    data,
     isLoading: clientsLoading,
     isError: clientsError,
-    refetch,
   } = useQuery({
-    queryKey: ["customers", page, rowsPerPage, searchQuery],
-    queryFn: () =>
-      customerService.getAllCustomers({
-        page: page + 1,
-        limit: rowsPerPage,
-        search: searchQuery,
-      }),
+    queryKey: ["customers"],
+    queryFn: () => customerService.getAllCustomers(), // fetch all clients at once
     keepPreviousData: true,
   });
+
+  const clientsData = useMemo(() => data?.data?.data, [data]);
 
   // Create client mutation
   const createClientMutation = useMutation({
@@ -100,6 +96,17 @@ export default function Clients() {
       handleCloseDeleteDialog();
     },
   });
+
+  // Filter and paginate clients on the client side
+  const filteredClients =
+    clientsData?.filter((client) =>
+      client.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
+
+  const paginatedClients = filteredClients.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -144,6 +151,8 @@ export default function Clients() {
       deleteClientMutation.mutate(clientToDelete._id);
     }
   };
+
+  console.log("clients", clientsData);
 
   return (
     <Box>
@@ -206,15 +215,12 @@ export default function Clients() {
                 <TableHead>
                   <TableRow>
                     <TableCell className="arabic-text">اسم العميل</TableCell>
-                    <TableCell className="arabic-text">عدد العملات</TableCell>
-                    <TableCell className="arabic-text">عدد المعاملات</TableCell>
-                    <TableCell className="arabic-text">تاريخ الإضافة</TableCell>
                     <TableCell className="arabic-text">الإجراءات</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {clientsData?.data?.data?.length > 0 ? (
-                    clientsData.data?.data?.map((client) => (
+                  {paginatedClients.length > 0 ? (
+                    paginatedClients.map((client) => (
                       <TableRow
                         key={client._id}
                         hover
@@ -223,11 +229,6 @@ export default function Clients() {
                       >
                         <TableCell className="arabic-text">
                           {client.name}
-                        </TableCell>
-                        <TableCell>{client.currencies_count || 0}</TableCell>
-                        <TableCell>{client.transactions_count || 0}</TableCell>
-                        <TableCell>
-                          {new Date(client.created).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
                           <IconButton
@@ -271,7 +272,7 @@ export default function Clients() {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={clientsData?.pagination?.total || 0}
+              count={filteredClients.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}

@@ -322,7 +322,8 @@ export default function ClientDetails() {
                     عدد العملات: {balancesData?.data?.data?.length || 0}
                   </Typography>
                   <Typography variant="body1" className="arabic-text">
-                    عدد المعاملات: {transactionsData?.pagination?.total || 0}
+                    عدد المعاملات:{" "}
+                    {transactionsData?.data?.pagination?.total || 0}
                   </Typography>
                 </CardContent>
               </Card>
