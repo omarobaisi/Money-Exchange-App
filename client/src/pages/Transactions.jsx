@@ -19,25 +19,19 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Chip,
   Collapse,
   Card,
   CardContent,
-  InputAdornment,
+  Menu,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
-  FilterList as FilterListIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  Search as SearchIcon,
+  MoreVert as MoreVertIcon,
 } from "@mui/icons-material";
 import { DateTime } from "luxon";
 import debounce from "lodash.debounce";
@@ -46,6 +40,8 @@ import {
   currencyService,
   customerService,
 } from "../services/api";
+import EditTransactionModal from "../components/EditTransactionModal";
+import DeleteTransactionDialog from "../components/DeleteTransactionDialog";
 
 // Transaction movement types map
 const movementTypeMap = {
@@ -85,12 +81,21 @@ const Transactions = () => {
   const [transactionToDelete, setTransactionToDelete] = useState(null);
   const [filterExpanded, setFilterExpanded] = useState(false);
 
+  // Action menu state
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+
+  // Edit mode state
+  const [editingId, setEditingId] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editInitialValues, setEditInitialValues] = useState(null);
+
   // Filter states
   const [customerId, setCustomerId] = useState("");
   const [currencyId, setCurrencyId] = useState("");
   const [movement, setMovement] = useState("");
   const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [endDate, setEndDate] = useState(DateTime.now());
 
   // Fetch transactions
   const {
@@ -98,8 +103,8 @@ const Transactions = () => {
     isLoading: transactionsLoading,
     isError: transactionsError,
     refetch: refetchTransactions,
-  } = useQuery(
-    [
+  } = useQuery({
+    queryKey: [
       "transactions",
       page,
       rowsPerPage,
@@ -109,7 +114,7 @@ const Transactions = () => {
       startDate,
       endDate,
     ],
-    () =>
+    queryFn: () =>
       transactionService.getTransactions({
         page: page + 1,
         limit: rowsPerPage,
@@ -119,36 +124,99 @@ const Transactions = () => {
         ...(startDate && { startDate: startDate.toISODate() }),
         ...(endDate && { endDate: endDate.toISODate() }),
       }),
-    {
-      keepPreviousData: true,
-    }
-  );
+    keepPreviousData: true,
+  });
 
   // Fetch customers
-  const { data: customersData, isLoading: customersLoading } = useQuery(
-    ["customers"],
-    customerService.getAllCustomers
-  );
+  const { data: customersData, isLoading: customersLoading } = useQuery({
+    queryKey: ["customers"],
+    queryFn: customerService.getAllCustomers,
+  });
 
   // Fetch currencies
-  const { data: currenciesData, isLoading: currenciesLoading } = useQuery(
-    ["currencies"],
-    currencyService.getAllCurrencies
-  );
+  const { data: currenciesData, isLoading: currenciesLoading } = useQuery({
+    queryKey: ["currencies"],
+    queryFn: currencyService.getAllCurrencies,
+  });
 
   // Delete transaction mutation
-  const deleteTransactionMutation = useMutation(
-    (id) => transactionService.deleteTransaction(id),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["transactions"]);
-        handleCloseDeleteDialog();
-      },
-      onError: (error) => {
-        console.error("Error deleting transaction:", error);
-      },
+  const deleteTransactionMutation = useMutation({
+    mutationFn: (id) => transactionService.deleteTransaction(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      handleCloseDeleteDialog();
+    },
+    onError: (error) => {
+      console.error("Error deleting transaction:", error);
+    },
+  });
+
+  // Update transaction mutation
+  const updateTransactionMutation = useMutation({
+    mutationFn: ({ id, data }) =>
+      transactionService.updateTransaction(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      setEditingId(null);
+    },
+    onError: (error) => {
+      console.error("Error updating transaction:", error);
+    },
+  });
+
+  // Action menu handlers
+  const handleOpenMenu = (event, transaction) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedTransaction(transaction);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+    setSelectedTransaction(null);
+  };
+
+  const handleEdit = () => {
+    if (selectedTransaction && transactionsData?.data?.data) {
+      setEditingId(selectedTransaction._id);
+      const transaction = transactionsData.data.data.find(
+        (t) => t._id === selectedTransaction._id
+      );
+      if (transaction) {
+        setEditInitialValues({
+          amount: transaction.amount,
+          commission: transaction.commission || 0,
+          note: transaction.note || "",
+          movement: transaction.movement,
+          customerId: transaction.customer._id,
+          currencyId: transaction.currency._id,
+        });
+        setEditModalOpen(true);
+      }
     }
-  );
+    handleCloseMenu();
+  };
+
+  const handleDelete = () => {
+    if (selectedTransaction) {
+      setTransactionToDelete(selectedTransaction);
+      setOpenDeleteDialog(true);
+    }
+    handleCloseMenu();
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditModalOpen(false);
+  };
+
+  const handleEditSubmitForm = (data) => {
+    updateTransactionMutation.mutate({
+      id: editingId,
+      data,
+    });
+    setEditModalOpen(false);
+    setEditingId(null);
+  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -157,11 +225,6 @@ const Transactions = () => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-  };
-
-  const handleOpenDeleteDialog = (transaction) => {
-    setTransactionToDelete(transaction);
-    setOpenDeleteDialog(true);
   };
 
   const handleCloseDeleteDialog = () => {
@@ -184,7 +247,7 @@ const Transactions = () => {
     setCurrencyId("");
     setMovement("");
     setStartDate(null);
-    setEndDate(null);
+    setEndDate(DateTime.now());
   };
 
   const debouncedRefetch = debounce(refetchTransactions, 300);
@@ -405,6 +468,7 @@ const Transactions = () => {
                 <TableBody>
                   {transactionsData?.data?.data?.map((transaction) => (
                     <TableRow key={transaction._id}>
+                      {/* Only view mode, remove isEditing logic */}
                       <TableCell>
                         <Link to={`/clients/${transaction.customer._id}`}>
                           {transaction.customer.name}
@@ -439,10 +503,9 @@ const Transactions = () => {
                       <TableCell>
                         <IconButton
                           size="small"
-                          color="error"
-                          onClick={() => handleOpenDeleteDialog(transaction)}
+                          onClick={(e) => handleOpenMenu(e, transaction)}
                         >
-                          <DeleteIcon />
+                          <MoreVertIcon />
                         </IconButton>
                       </TableCell>
                     </TableRow>
@@ -466,7 +529,7 @@ const Transactions = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={transactionsData?.pagination?.total || 0}
+              count={transactionsData?.data?.pagination?.total || 0}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -480,42 +543,41 @@ const Transactions = () => {
         )}
       </Paper>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-        <DialogTitle className="arabic-text">تأكيد الحذف</DialogTitle>
-        <DialogContent>
-          <DialogContentText className="arabic-text">
-            هل أنت متأكد من رغبتك في حذف هذه المعاملة؟ هذا الإجراء لا يمكن
-            التراجع عنه.
-          </DialogContentText>
-          {transactionToDelete && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="body2" className="arabic-text">
-                العميل: {transactionToDelete.customer?.name}
-              </Typography>
-              <Typography variant="body2" className="arabic-text">
-                نوع المعاملة: {getMovementLabel(transactionToDelete.movement)}
-              </Typography>
-              <Typography variant="body2" className="arabic-text">
-                المبلغ: {transactionToDelete.amount?.toLocaleString()}
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} className="arabic-text">
-            إلغاء
-          </Button>
-          <Button
-            onClick={handleDeleteTransaction}
-            color="error"
-            disabled={deleteTransactionMutation.isLoading}
-            className="arabic-text"
-          >
-            {deleteTransactionMutation.isLoading ? "جاري الحذف..." : "حذف"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Action Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseMenu}
+      >
+        <MenuItem onClick={handleEdit}>
+          <EditIcon sx={{ mr: 1 }} fontSize="small" />
+          <Typography className="arabic-text">تعديل</Typography>
+        </MenuItem>
+        <MenuItem onClick={handleDelete}>
+          <DeleteIcon sx={{ mr: 1 }} fontSize="small" color="error" />
+          <Typography className="arabic-text" color="error">
+            حذف
+          </Typography>
+        </MenuItem>
+      </Menu>
+
+      <EditTransactionModal
+        open={editModalOpen}
+        onClose={handleCancelEdit}
+        onSubmit={handleEditSubmitForm}
+        initialValues={editInitialValues}
+        customersData={customersData}
+        currenciesData={currenciesData}
+        loading={updateTransactionMutation.isLoading}
+      />
+      <DeleteTransactionDialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        onDelete={handleDeleteTransaction}
+        loading={deleteTransactionMutation.isLoading}
+        transaction={transactionToDelete}
+        getMovementLabel={getMovementLabel}
+      />
     </Box>
   );
 };

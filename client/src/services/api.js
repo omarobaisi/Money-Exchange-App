@@ -59,6 +59,8 @@ export const transactionService = {
   getTransaction: (id) => axios.get(`${API_URL}/transactions/${id}`),
   createTransaction: (data) => axios.post(`${API_URL}/transactions`, data),
   deleteTransaction: (id) => axios.delete(`${API_URL}/transactions/${id}`),
+  updateTransaction: (id, data) =>
+    axios.put(`${API_URL}/transactions/${id}`, data),
 };
 
 // Earnings Services

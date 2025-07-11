@@ -19,6 +19,189 @@ import {
 import { Op } from "sequelize";
 
 /**
+ * Helper function to calculate commission amount
+ */
+const calculateCommission = (amount, commission, movement) => {
+  const isCheck = movement.includes("check");
+  return isCheck && commission > 0 ? amount * commission : 0;
+};
+
+/**
+ * Helper function to manage earning records
+ */
+const manageEarning = async (
+  transactionId,
+  commissionAmount,
+  currencyId,
+  operation,
+  transaction
+) => {
+  if (operation === "delete") {
+    await Earning.destroy({
+      where: { transaction_id: transactionId },
+      transaction,
+    });
+  } else if (commissionAmount > 0) {
+    const existingEarning = await Earning.findOne({
+      where: { transaction_id: transactionId },
+    });
+
+    if (existingEarning) {
+      await existingEarning.update(
+        {
+          amount: commissionAmount,
+          currency_id: currencyId,
+        },
+        { transaction }
+      );
+    } else {
+      await Earning.create(
+        {
+          amount: commissionAmount,
+          currency_id: currencyId,
+          type: "commission",
+          description: `Commission for transaction #${transactionId}`,
+          transaction_id: transactionId,
+        },
+        { transaction }
+      );
+    }
+  } else {
+    // Delete earning if commission is 0
+    await Earning.destroy({
+      where: { transaction_id: transactionId },
+      transaction,
+    });
+  }
+};
+
+/**
+ * Helper function to update balances based on transaction
+ */
+const updateBalances = async (transactionData, operation, transaction) => {
+  const {
+    amount,
+    movement,
+    customerId,
+    currencyId,
+    commissionAmount = 0,
+  } = transactionData;
+
+  // Get or create currency records
+  const [myCurrency] = await MyCurrency.findOrCreate({
+    where: { currency_id: currencyId },
+    defaults: {
+      balance: 0,
+      check_balance: 0,
+      star: false,
+    },
+    transaction,
+  });
+
+  const [customerCurrency] = await CustomerCurrency.findOrCreate({
+    where: {
+      customer_id: customerId,
+      currency_id: currencyId,
+    },
+    defaults: {
+      balance: 0,
+      check_balance: 0,
+      star: false,
+    },
+    transaction,
+  });
+
+  // Parse current balances
+  const myBalance = parseFloat(myCurrency.balance);
+  const myCheckBalance = parseFloat(myCurrency.check_balance);
+  const custBalance = parseFloat(customerCurrency.balance);
+  const custCheckBalance = parseFloat(customerCurrency.check_balance);
+
+  // Determine transaction type
+  const isBuy = movement.includes("buy");
+  const isCash = movement.includes("cash");
+  const isCheck = movement.includes("check");
+  const isCollection = movement === "check-collection";
+
+  // Calculate the total amount including commission
+  const amountWithCommission = amount + commissionAmount;
+
+  // Determine the multiplier based on operation
+  // For create: normal, for delete: reverse, for update: handled separately
+  const multiplier = operation === "delete" ? -1 : 1;
+
+  // Apply balance changes
+  if (isBuy) {
+    // Company buys from customer
+    if (isCash) {
+      await myCurrency.update(
+        {
+          balance: myBalance + amount * multiplier,
+        },
+        { transaction }
+      );
+      await customerCurrency.update(
+        {
+          balance: custBalance - amount * multiplier,
+        },
+        { transaction }
+      );
+    } else if (isCheck) {
+      await myCurrency.update(
+        {
+          check_balance: myCheckBalance + amountWithCommission * multiplier,
+        },
+        { transaction }
+      );
+      await customerCurrency.update(
+        {
+          check_balance: custCheckBalance - amountWithCommission * multiplier,
+        },
+        { transaction }
+      );
+    }
+  } else if (isCollection) {
+    // Check collection
+    await myCurrency.update(
+      {
+        balance: myBalance + amount * multiplier,
+        check_balance: myCheckBalance - amount * multiplier,
+      },
+      { transaction }
+    );
+  } else {
+    // Company sells to customer
+    if (isCash) {
+      await myCurrency.update(
+        {
+          balance: myBalance - amount * multiplier,
+        },
+        { transaction }
+      );
+      await customerCurrency.update(
+        {
+          balance: custBalance + amount * multiplier,
+        },
+        { transaction }
+      );
+    } else if (isCheck) {
+      await myCurrency.update(
+        {
+          check_balance: myCheckBalance - amountWithCommission * multiplier,
+        },
+        { transaction }
+      );
+      await customerCurrency.update(
+        {
+          check_balance: custCheckBalance + amountWithCommission * multiplier,
+        },
+        { transaction }
+      );
+    }
+  }
+};
+
+/**
  * Get all transactions with optional filters
  */
 export const getTransactions = async (req, res) => {
@@ -116,131 +299,30 @@ export const createTransaction = async (req, res) => {
       { transaction }
     );
 
-    // Calculate commission amount if it's a check transaction
-    const isCheck = movement.includes("check");
-    let commissionAmount = 0;
-    if (isCheck && commission > 0) {
-      commissionAmount = amount * commission;
-      // Create earning record for commission
-      await Earning.create(
-        {
-          amount: commissionAmount,
-          currency_id: currencyId,
-          type: "commission",
-          description: `Commission for transaction #${newTransaction._id}`,
-          transaction_id: newTransaction._id,
-        },
-        { transaction }
-      );
-    }
+    // Calculate commission amount
+    const commissionAmount = calculateCommission(amount, commission, movement);
 
-    // Update balances based on movement type
-    const isBuy = movement.includes("buy");
-    const isCash = movement.includes("cash");
-    const isCollection = movement === "check-collection";
+    // Manage earning record
+    await manageEarning(
+      newTransaction._id,
+      commissionAmount,
+      currencyId,
+      "create",
+      transaction
+    );
 
-    // Update company balance
-    const [myCurrency] = await MyCurrency.findOrCreate({
-      where: { currency_id: currencyId },
-      defaults: {
-        balance: 0,
-        check_balance: 0,
-        star: false,
+    // Update balances
+    await updateBalances(
+      {
+        amount,
+        movement,
+        customerId,
+        currencyId,
+        commissionAmount,
       },
-      transaction,
-    });
-    const myBalance = parseFloat(myCurrency.balance);
-    const myCheckBalance = parseFloat(myCurrency.check_balance);
-
-    // Update customer balance
-    const [customerCurrency] = await CustomerCurrency.findOrCreate({
-      where: {
-        customer_id: customerId,
-        currency_id: currencyId,
-      },
-      defaults: {
-        balance: 0,
-        check_balance: 0,
-        star: false,
-      },
-      transaction,
-    });
-    const custBalance = parseFloat(customerCurrency.balance);
-    const custCheckBalance = parseFloat(customerCurrency.check_balance);
-
-    // Calculate balance changes
-    const amountWithCommission = amount + commissionAmount;
-
-    if (isBuy) {
-      // Company buys from customer
-      if (isCash) {
-        await myCurrency.update(
-          {
-            balance: myBalance + amount,
-          },
-          { transaction }
-        );
-        await customerCurrency.update(
-          {
-            balance: custBalance - amount,
-          },
-          { transaction }
-        );
-      } else if (isCheck) {
-        // For check transactions, handle both amount and commission
-        await myCurrency.update(
-          {
-            check_balance: myCheckBalance + amountWithCommission, // Add both amount and commission
-          },
-          { transaction }
-        );
-        await customerCurrency.update(
-          {
-            check_balance: custCheckBalance - amountWithCommission, // Subtract both amount and commission
-          },
-          { transaction }
-        );
-      }
-    } else if (isCollection) {
-      // Check collection
-      await myCurrency.update(
-        {
-          balance: myBalance + amount,
-          check_balance: myCheckBalance - amount,
-        },
-        { transaction }
-      );
-    } else {
-      // Company sells to customer
-      if (isCash) {
-        await myCurrency.update(
-          {
-            balance: myBalance - amount,
-          },
-          { transaction }
-        );
-        await customerCurrency.update(
-          {
-            balance: custBalance + amount,
-          },
-          { transaction }
-        );
-      } else if (isCheck) {
-        // For check transactions, handle both amount and commission
-        await myCurrency.update(
-          {
-            check_balance: myCheckBalance - amountWithCommission, // Subtract both amount and commission
-          },
-          { transaction }
-        );
-        await customerCurrency.update(
-          {
-            check_balance: custCheckBalance + amountWithCommission, // Add both amount and commission
-          },
-          { transaction }
-        );
-      }
-    }
+      "create",
+      transaction
+    );
 
     await transaction.commit();
 
@@ -274,51 +356,6 @@ export const createTransaction = async (req, res) => {
 };
 
 /**
- * Get transaction statistics
- */
-export const getTransactionStats = async (req, res) => {
-  try {
-    const { startDate, endDate } = req.query;
-
-    const where = {};
-    if (startDate && endDate) {
-      where.created = {
-        [Op.between]: [new Date(startDate), new Date(endDate)],
-      };
-    }
-
-    const stats = await Transaction.findAll({
-      where,
-      attributes: [
-        "movement",
-        "currency_id",
-        [sequelize.fn("SUM", sequelize.col("amount")), "total_amount"],
-        [sequelize.fn("SUM", sequelize.col("commission")), "total_commission"],
-      ],
-      include: [
-        {
-          model: Currency,
-          as: "currency",
-          attributes: ["currency"],
-        },
-      ],
-      group: ["movement", "currency_id", "currency._id"],
-    });
-
-    res.json({
-      success: true,
-      data: stats,
-    });
-  } catch (error) {
-    console.error("Error fetching transaction stats:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error fetching transaction statistics",
-    });
-  }
-};
-
-/**
  * Update a transaction and its associated earning
  */
 export const updateTransaction = async (req, res) => {
@@ -346,6 +383,26 @@ export const updateTransaction = async (req, res) => {
       });
     }
 
+    // Calculate old commission amount to reverse balances
+    const oldCommissionAmount = calculateCommission(
+      existingTransaction.amount,
+      existingTransaction.commission,
+      existingTransaction.movement
+    );
+
+    // Reverse the old transaction's effect on balances
+    await updateBalances(
+      {
+        amount: existingTransaction.amount,
+        movement: existingTransaction.movement,
+        customerId: existingTransaction.customer_id,
+        currencyId: existingTransaction.currency_id,
+        commissionAmount: oldCommissionAmount,
+      },
+      "delete",
+      transaction
+    );
+
     // Update transaction
     await existingTransaction.update(
       {
@@ -359,41 +416,34 @@ export const updateTransaction = async (req, res) => {
       { transaction }
     );
 
-    // Handle commission earning
-    const isCheck = movement.includes("check");
-    const existingEarning = await Earning.findOne({
-      where: { transaction_id: id },
-    });
+    // Calculate new commission amount
+    const newCommissionAmount = calculateCommission(
+      amount,
+      commission,
+      movement
+    );
 
-    if (isCheck && commission > 0) {
-      const commissionAmount = amount * commission;
+    // Manage earning record
+    await manageEarning(
+      id,
+      newCommissionAmount,
+      currencyId,
+      "update",
+      transaction
+    );
 
-      if (existingEarning) {
-        // Update existing earning
-        await existingEarning.update(
-          {
-            amount: commissionAmount,
-            currency_id: currencyId,
-          },
-          { transaction }
-        );
-      } else {
-        // Create new earning
-        await Earning.create(
-          {
-            amount: commissionAmount,
-            currency_id: currencyId,
-            type: "commission",
-            description: `Commission for transaction #${id}`,
-            transaction_id: id,
-          },
-          { transaction }
-        );
-      }
-    } else if (existingEarning) {
-      // Delete earning if transaction is no longer a check transaction
-      await existingEarning.destroy({ transaction });
-    }
+    // Apply the new transaction's effect on balances
+    await updateBalances(
+      {
+        amount,
+        movement,
+        customerId,
+        currencyId,
+        commissionAmount: newCommissionAmount,
+      },
+      "create",
+      transaction
+    );
 
     await transaction.commit();
 
@@ -446,11 +496,34 @@ export const deleteTransaction = async (req, res) => {
       });
     }
 
-    // Delete associated earning if exists
-    await Earning.destroy({
-      where: { transaction_id: id },
-      transaction,
-    });
+    // Calculate commission amount
+    const commissionAmount = calculateCommission(
+      existingTransaction.amount,
+      existingTransaction.commission,
+      existingTransaction.movement
+    );
+
+    // Reverse the transaction's effect on balances
+    await updateBalances(
+      {
+        amount: existingTransaction.amount,
+        movement: existingTransaction.movement,
+        customerId: existingTransaction.customer_id,
+        currencyId: existingTransaction.currency_id,
+        commissionAmount,
+      },
+      "delete",
+      transaction
+    );
+
+    // Delete associated earning
+    await manageEarning(
+      id,
+      0,
+      existingTransaction.currency_id,
+      "delete",
+      transaction
+    );
 
     // Delete transaction
     await existingTransaction.destroy({ transaction });
@@ -467,6 +540,51 @@ export const deleteTransaction = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error deleting transaction",
+    });
+  }
+};
+
+/**
+ * Get transaction statistics
+ */
+export const getTransactionStats = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    const where = {};
+    if (startDate && endDate) {
+      where.created = {
+        [Op.between]: [new Date(startDate), new Date(endDate)],
+      };
+    }
+
+    const stats = await Transaction.findAll({
+      where,
+      attributes: [
+        "movement",
+        "currency_id",
+        [sequelize.fn("SUM", sequelize.col("amount")), "total_amount"],
+        [sequelize.fn("SUM", sequelize.col("commission")), "total_commission"],
+      ],
+      include: [
+        {
+          model: Currency,
+          as: "currency",
+          attributes: ["currency"],
+        },
+      ],
+      group: ["movement", "currency_id", "currency._id"],
+    });
+
+    res.json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    console.error("Error fetching transaction stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching transaction statistics",
     });
   }
 };

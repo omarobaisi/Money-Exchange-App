@@ -16,7 +16,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { DateTime } from "luxon";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import { transactionSchema } from "../validation/transactionSchema";
 import {
   transactionService,
   currencyService,
@@ -50,19 +50,6 @@ const transactionTypeMap = {
     color: "#673ab7",
   },
 };
-
-// Validation schema
-const transactionSchema = yup.object().shape({
-  customerId: yup.mixed().required("اسم الزبون مطلوب"),
-  currencyId: yup.mixed().required("العملة مطلوبة"),
-  amount: yup
-    .number()
-    .required("المبلغ مطلوب")
-    .positive("المبلغ يجب أن يكون أكبر من صفر"),
-  commission: yup.number().min(0, "العمولة يجب أن تكون 0 أو أكبر").nullable(),
-  date: yup.date().required("التاريخ مطلوب"),
-  note: yup.string(),
-});
 
 const TransactionForm = () => {
   const { type } = useParams();
