@@ -1,7 +1,5 @@
 # Money Exchange App - Project Status
 
-## Completed Features
-
 ### Authentication & Account Management
 
 - ✅ User registration and login system
@@ -35,16 +33,12 @@
 - ✅ Client transaction history
 - ✅ Client search and filtering
 
-## Todo
-
 ### Transaction System
 
-- ⏳ Transaction table implementation
-- ⏳ Transaction filtering and search
-- ⏳ Transaction editing functionality
-- ⏳ Transaction deletion with balance rollback
-- ⏳ Transaction export functionality
-- ⏳ Transaction statistics and reporting
+- ✅ Transaction table implementation
+- ✅ Transaction filtering
+- 🔄 Transaction editing functionality
+- 🔄 Transaction deletion with balance rollback
 
 ### Profit Management
 
