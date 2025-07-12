@@ -46,6 +46,11 @@
 - ✅ Commission tracking and reporting
 - ✅ Monthly profit summaries
 
+## TODO
+
+- ⏳ Change the naming of transaction from (buy-sell) to (withdrawal and deposit)
+- ⏳ Make the transaction commission a percentage and show the amount after the commission under it
+
 ## Future Features
 
 ### Money Exchange
