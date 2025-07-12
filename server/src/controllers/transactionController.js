@@ -60,7 +60,7 @@ const manageEarning = async (
           amount: commissionAmount,
           currency_id: currencyId,
           type: "commission",
-          description: `Commission for transaction #${transactionId}`,
+          description: `عمولة للمعاملة رقم ${transactionId}`,
           transaction_id: transactionId,
         },
         { transaction }

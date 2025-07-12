@@ -70,7 +70,9 @@ export const earningService = {
   createEarning: (data) => axios.post(`${API_URL}/earnings`, data),
   updateEarning: (id, data) => axios.put(`${API_URL}/earnings/${id}`, data),
   deleteEarning: (id) => axios.delete(`${API_URL}/earnings/${id}`),
-  getEarningsByCurrency: () => axios.get(`${API_URL}/earnings/by-currency`),
+  getEarningsByCurrency: (params) =>
+    axios.get(`${API_URL}/earnings/reports/by-currency`, { params }),
+  getEarningsByType: () => axios.get(`${API_URL}/earnings/reports/by-type`),
   getTotalEarnings: () => axios.get(`${API_URL}/earnings/total`),
 };
 

@@ -14,6 +14,9 @@ import {
   toggleCustomerStar,
   getCustomersCount,
   getCustomer,
+  updateCustomer,
+  deleteCustomer,
+  toggleCustomerCurrencyStar,
 } from "../controllers/customerController.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 
@@ -42,6 +45,20 @@ router.get("/:id", getCustomer);
  * @access Private
  */
 router.post("/", createCustomer);
+
+/**
+ * @route PUT /api/customers/:id
+ * @desc Update a customer
+ * @access Private
+ */
+router.put("/:id", updateCustomer);
+
+/**
+ * @route DELETE /api/customers/:id
+ * @desc Delete a customer
+ * @access Private
+ */
+router.delete("/:id", deleteCustomer);
 
 /**
  * @route GET /api/customers/:customerId/balances
@@ -73,6 +90,16 @@ router.put(
  * @access Private
  */
 router.put("/:customerId/star", toggleCustomerStar);
+
+/**
+ * @route PUT /api/customers/:customerId/balances/:currencyId/star
+ * @desc Toggle star status for a customer's currency
+ * @access Private
+ */
+router.put(
+  "/:customerId/balances/:currencyId/star",
+  toggleCustomerCurrencyStar
+);
 
 /**
  * @route GET /api/customers/count

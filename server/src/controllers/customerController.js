@@ -222,6 +222,78 @@ export const toggleCustomerStar = async (req, res) => {
 };
 
 /**
+ * Update a customer
+ */
+export const updateCustomer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, ...rest } = req.body;
+    const customer = await Customer.findByPk(id);
+    if (!customer) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Customer not found" });
+    }
+    await customer.update({ name, ...rest });
+    res.json({ success: true, data: customer });
+  } catch (error) {
+    console.error("Error updating customer:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Error updating customer" });
+  }
+};
+
+/**
+ * Delete a customer
+ */
+export const deleteCustomer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const customer = await Customer.findByPk(id);
+    if (!customer) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Customer not found" });
+    }
+    await customer.destroy();
+    res.json({ success: true, message: "Customer deleted" });
+  } catch (error) {
+    console.error("Error deleting customer:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Error deleting customer" });
+  }
+};
+
+/**
+ * Toggle star status for a customer's currency
+ */
+export const toggleCustomerCurrencyStar = async (req, res) => {
+  try {
+    const { customerId, currencyId } = req.params;
+    const customerCurrency = await CustomerCurrency.findOne({
+      where: { customer_id: customerId, currency_id: currencyId },
+    });
+    if (!customerCurrency) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Customer currency not found" });
+    }
+    await customerCurrency.update({ star: !customerCurrency.star });
+    res.json({ success: true, data: customerCurrency });
+  } catch (error) {
+    console.error("Error toggling customer currency star:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error toggling customer currency star",
+      });
+  }
+};
+
+/**
  * Get total number of customers
  */
 export const getCustomersCount = async (req, res) => {

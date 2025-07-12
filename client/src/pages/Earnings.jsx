@@ -84,6 +84,8 @@ const Earnings = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   const {
     register,
@@ -107,19 +109,27 @@ const Earnings = () => {
     data: earningsData,
     isLoading: earningsLoading,
     isError: earningsError,
-  } = useQuery(
-    ["earnings", page, rowsPerPage],
-    () => earningService.getAllEarnings({ page: page + 1, limit: rowsPerPage }),
-    {
-      keepPreviousData: true,
-    }
-  );
+  } = useQuery({
+    queryKey: ["earnings", page, rowsPerPage, startDate, endDate],
+    queryFn: () =>
+      earningService.getAllEarnings({
+        page: page + 1,
+        limit: rowsPerPage,
+        startDate: startDate ? startDate.toISODate() : undefined,
+        endDate: endDate ? endDate.toISODate() : undefined,
+      }),
+    keepPreviousData: true,
+  });
 
   // Fetch earnings by currency (for summary)
-  const { data: earningsByCurrency, isLoading: summaryLoading } = useQuery(
-    ["earningsByCurrency"],
-    () => earningService.getEarningsByCurrency()
-  );
+  const { data: earningsByCurrency, isLoading: summaryLoading } = useQuery({
+    queryKey: ["earningsByCurrency", startDate, endDate],
+    queryFn: () =>
+      earningService.getEarningsByCurrency({
+        startDate: startDate ? startDate.toISODate() : undefined,
+        endDate: endDate ? endDate.toISODate() : undefined,
+      }),
+  });
 
   // Fetch all currencies for the dropdown
   const { data: currenciesData, isLoading: currenciesLoading } = useQuery(
@@ -229,6 +239,50 @@ const Earnings = () => {
       createEarningMutation.mutate(formattedData);
     }
   };
+
+  // Filter UI component
+  const PeriodFilter = ({ onFilter, onReset }) => (
+    <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
+      <DatePicker
+        label="من تاريخ"
+        value={startDate}
+        onChange={setStartDate}
+        slotProps={{
+          textField: { size: "small", fullWidth: false },
+        }}
+      />
+      <DatePicker
+        label="إلى تاريخ"
+        value={endDate}
+        onChange={setEndDate}
+        slotProps={{
+          textField: { size: "small", fullWidth: false },
+        }}
+      />
+      <Button
+        variant="contained"
+        onClick={() => {
+          setPage(0);
+          if (onFilter) onFilter();
+        }}
+        className="arabic-text"
+      >
+        تصفية
+      </Button>
+      <Button
+        variant="outlined"
+        onClick={() => {
+          setStartDate(null);
+          setEndDate(null);
+          setPage(0);
+          if (onReset) onReset();
+        }}
+        className="arabic-text"
+      >
+        إعادة تعيين
+      </Button>
+    </Box>
+  );
 
   return (
     <Box>
@@ -395,6 +449,8 @@ const Earnings = () => {
             سجل الأرباح
           </Typography>
 
+          <PeriodFilter />
+
           {earningsLoading ? (
             <Box sx={{ display: "flex", justifyContent: "center", my: 3 }}>
               <CircularProgress />
@@ -414,7 +470,7 @@ const Earnings = () => {
                       <TableCell className="arabic-text">المبلغ</TableCell>
                       <TableCell className="arabic-text">التاريخ</TableCell>
                       <TableCell className="arabic-text">الوصف</TableCell>
-                      <TableCell className="arabic-text">الإجراءات</TableCell>
+                      {/* <TableCell className="arabic-text">الإجراءات</TableCell> */}
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -438,7 +494,7 @@ const Earnings = () => {
                         <TableCell className="arabic-text">
                           {earning.description || "-"}
                         </TableCell>
-                        <TableCell>
+                        {/* <TableCell>
                           <IconButton
                             size="small"
                             color="primary"
@@ -453,7 +509,7 @@ const Earnings = () => {
                           >
                             <DeleteIcon />
                           </IconButton>
-                        </TableCell>
+                        </TableCell> */}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -463,7 +519,7 @@ const Earnings = () => {
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
-                count={earningsData?.pagination?.total || 0}
+                count={earningsData?.data?.pagination?.total || 0}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
@@ -484,6 +540,8 @@ const Earnings = () => {
           <Typography variant="h6" gutterBottom className="arabic-text">
             ملخص الأرباح حسب العملة
           </Typography>
+
+          <PeriodFilter />
 
           {summaryLoading ? (
             <Box sx={{ display: "flex", justifyContent: "center", my: 3 }}>
