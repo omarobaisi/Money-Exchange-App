@@ -3,6 +3,8 @@ import {
   getTransactions,
   createTransaction,
   getTransactionStats,
+  updateTransaction,
+  deleteTransaction,
 } from "../controllers/transactionController.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 
@@ -19,5 +21,11 @@ router.post("/", createTransaction);
 
 // GET /api/transactions/stats - Get transaction statistics
 router.get("/stats", getTransactionStats);
+
+// PATCH /api/transactions/:id - Update a transaction
+router.patch("/:id", updateTransaction);
+
+// DELETE /api/transactions/:id - Delete a transaction
+router.delete("/:id", deleteTransaction);
 
 export default router;

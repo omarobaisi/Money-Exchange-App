@@ -37,8 +37,8 @@
 
 - ✅ Transaction table implementation
 - ✅ Transaction filtering
-- 🔄 Transaction editing functionality
-- 🔄 Transaction deletion with balance rollback
+- ✅ Transaction editing functionality
+- ✅ Transaction deletion with balance rollback
 
 ### Profit Management
 

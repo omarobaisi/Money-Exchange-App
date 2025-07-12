@@ -54,29 +54,6 @@ const EditTransactionModal = ({
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} sm={6}>
               <Controller
-                name="customerId"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    select
-                    fullWidth
-                    label="اسم الزبون"
-                    error={!!errors.customerId}
-                    helperText={errors.customerId?.message}
-                    InputLabelProps={{ className: "arabic-text" }}
-                  >
-                    {customersData?.data?.data?.map((customer) => (
-                      <MenuItem key={customer._id} value={customer._id}>
-                        {customer.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Controller
                 name="currencyId"
                 control={control}
                 render={({ field }) => (
@@ -133,18 +110,21 @@ const EditTransactionModal = ({
                 inputProps={{ min: 0, step: 0.01 }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="العمولة"
-                type="number"
-                error={!!errors.commission}
-                helperText={errors.commission?.message}
-                {...register("commission")}
-                InputLabelProps={{ className: "arabic-text" }}
-                inputProps={{ min: 0, step: 0.01 }}
-              />
-            </Grid>
+            {(initialValues?.movement === "buy-check" ||
+              initialValues?.movement === "sell-check") && (
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="العمولة"
+                  type="number"
+                  error={!!errors.commission}
+                  helperText={errors.commission?.message}
+                  {...register("commission")}
+                  InputLabelProps={{ className: "arabic-text" }}
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Grid>
+            )}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -153,6 +133,8 @@ const EditTransactionModal = ({
                 rows={3}
                 {...register("note")}
                 InputLabelProps={{ className: "arabic-text" }}
+                error={!!errors.note}
+                helperText={errors.note?.message}
               />
             </Grid>
           </Grid>

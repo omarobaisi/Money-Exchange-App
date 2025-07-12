@@ -189,6 +189,8 @@ const Transactions = () => {
           movement: transaction.movement,
           customerId: transaction.customer._id,
           currencyId: transaction.currency._id,
+          created: transaction.created,
+          date: transaction.created,
         });
         setEditModalOpen(true);
       }
