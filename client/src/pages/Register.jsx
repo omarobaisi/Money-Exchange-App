@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useAuth } from "../contexts/AuthContext";
+import { showSuccess, showError } from "../hooks/useSnackbar";
 
 // Validation schema
 const schema = yup.object().shape({
@@ -35,7 +36,6 @@ const schema = yup.object().shape({
 export default function Register() {
   const { register: registerUser, error: authError } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const {
@@ -55,21 +55,18 @@ export default function Register() {
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-      setError("");
-
       // Remove confirmPassword field before sending to API
       const { confirmPassword, ...userData } = data;
-
       const success = await registerUser(userData);
-
       if (success) {
+        showSuccess("تم إنشاء الحساب بنجاح");
         navigate("/");
       } else {
-        setError(authError || "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.");
+        showError(authError || "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.");
       }
     } catch (err) {
       console.error("Registration error:", err);
-      setError("حدث خطأ في إنشاء الحساب. يرجى المحاولة مرة أخرى.");
+      showError("حدث خطأ في إنشاء الحساب. يرجى المحاولة مرة أخرى.");
     } finally {
       setLoading(false);
     }
@@ -92,16 +89,6 @@ export default function Register() {
       >
         إنشاء حساب جديد
       </Typography>
-
-      {error && (
-        <Alert
-          severity="error"
-          sx={{ mb: 2, width: "100%" }}
-          className="arabic-text"
-        >
-          {error}
-        </Alert>
-      )}
 
       <Box
         component="form"

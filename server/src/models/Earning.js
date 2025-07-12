@@ -46,7 +46,7 @@ const Earning = sequelize.define(
       allowNull: true,
     },
     type: {
-      type: DataTypes.ENUM("commission", "fee", "spread", "other"),
+      type: DataTypes.ENUM("commission", "exchange", "fee", "spread", "other"),
       allowNull: false,
       defaultValue: "other",
     },

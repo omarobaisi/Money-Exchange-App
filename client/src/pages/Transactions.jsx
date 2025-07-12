@@ -42,6 +42,7 @@ import {
 } from "../services/api";
 import EditTransactionModal from "../components/EditTransactionModal";
 import DeleteTransactionDialog from "../components/DeleteTransactionDialog";
+import { showSuccess, showError } from "../hooks/useSnackbar";
 
 // Transaction movement types map
 const movementTypeMap = {
@@ -145,8 +146,10 @@ const Transactions = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       handleCloseDeleteDialog();
+      showSuccess("تم حذف المعاملة بنجاح");
     },
     onError: (error) => {
+      showError("حدث خطأ أثناء حذف المعاملة. يرجى المحاولة مرة أخرى.");
       console.error("Error deleting transaction:", error);
     },
   });
@@ -158,8 +161,10 @@ const Transactions = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       setEditingId(null);
+      showSuccess("تم تعديل المعاملة بنجاح");
     },
     onError: (error) => {
+      showError("حدث خطأ أثناء تعديل المعاملة. يرجى المحاولة مرة أخرى.");
       console.error("Error updating transaction:", error);
     },
   });
@@ -321,6 +326,7 @@ const Transactions = () => {
               variant="contained"
               color="info"
               onClick={() => navigate("/transaction/sell-check")}
+              sx={{ ml: 1 }}
               className="arabic-text"
             >
               بيع شيك

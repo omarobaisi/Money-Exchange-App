@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -9,7 +8,6 @@ import {
   TextField,
   Button,
   MenuItem,
-  Alert,
   InputAdornment,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -22,6 +20,7 @@ import {
   currencyService,
   customerService,
 } from "../services/api";
+import { showSuccess, showError } from "../hooks/useSnackbar";
 
 // Define transaction type maps
 const transactionTypeMap = {
@@ -55,7 +54,6 @@ const TransactionForm = () => {
   const { type } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [error, setError] = useState("");
 
   // Transaction form
   const {
@@ -101,10 +99,11 @@ const TransactionForm = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(["transactions"]);
+        showSuccess("تم إنشاء المعاملة بنجاح");
         navigate("/transactions");
       },
       onError: (error) => {
-        setError("حدث خطأ أثناء إنشاء المعاملة. يرجى المحاولة مرة أخرى.");
+        showError("حدث خطأ أثناء إنشاء المعاملة. يرجى المحاولة مرة أخرى.");
         console.error("Error creating transaction:", error);
       },
     }
@@ -112,7 +111,6 @@ const TransactionForm = () => {
 
   const onSubmit = (data) => {
     try {
-      setError("");
       const formattedData = {
         customerId: data.customerId,
         currencyId: data.currencyId,
@@ -125,7 +123,7 @@ const TransactionForm = () => {
       createTransactionMutation.mutate(formattedData);
     } catch (error) {
       console.log(error);
-      setError("حدث خطأ أثناء إنشاء المعاملة. يرجى المحاولة مرة أخرى.");
+      showError("حدث خطأ أثناء إنشاء المعاملة. يرجى المحاولة مرة أخرى.");
     }
   };
 
@@ -148,12 +146,6 @@ const TransactionForm = () => {
       </Typography>
 
       <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }} className="arabic-text">
-            {error}
-          </Alert>
-        )}
-
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>

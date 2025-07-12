@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import { userService } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
+import { showSuccess, showError } from "../hooks/useSnackbar";
 
 // Validation schema for profile form
 const profileSchema = yup.object().shape({
@@ -44,8 +45,6 @@ export default function Settings() {
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("darkMode") === "true"
   );
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   // React Hook Form setup
   const {
@@ -67,20 +66,14 @@ export default function Settings() {
   const updateProfileMutation = useMutation({
     mutationFn: (userData) => userService.updateProfile(userData),
     onSuccess: () => {
-      setSuccess("تم تحديث الملف الشخصي بنجاح");
+      showSuccess("تم تحديث الملف الشخصي بنجاح");
       reset({ password: "", confirmPassword: "" });
       checkAuthStatus(); // Refresh user data
-      setTimeout(() => {
-        setSuccess("");
-      }, 3000);
     },
     onError: (err) => {
-      setError(
+      showError(
         err.response?.data?.data?.message || "حدث خطأ أثناء تحديث البيانات"
       );
-      setTimeout(() => {
-        setError("");
-      }, 3000);
     },
   });
 
@@ -111,18 +104,6 @@ export default function Settings() {
       >
         الإعدادات
       </Typography>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} className="arabic-text">
-          {error}
-        </Alert>
-      )}
-
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }} className="arabic-text">
-          {success}
-        </Alert>
-      )}
 
       <Grid container spacing={3}>
         {/* Profile Settings */}

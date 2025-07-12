@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useAuth } from "../contexts/AuthContext";
+import { showSuccess, showError } from "../hooks/useSnackbar";
 
 const Form = styled("form")(({ theme }) => ({
   width: "100%",
@@ -35,7 +36,6 @@ const schema = yup.object().shape({
 const Login = () => {
   const { login, error: authError } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const {
@@ -53,20 +53,20 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-      setError("");
       const success = await login(data.username, data.password);
 
       if (success) {
+        showSuccess("تم تسجيل الدخول بنجاح");
         navigate("/");
       } else {
-        setError(
+        showError(
           authError ||
             "فشل تسجيل الدخول. يرجى التحقق من اسم المستخدم وكلمة المرور."
         );
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("حدث خطأ في تسجيل الدخول. يرجى المحاولة مرة أخرى.");
+      showError("حدث خطأ في تسجيل الدخول. يرجى المحاولة مرة أخرى.");
     } finally {
       setLoading(false);
     }
@@ -100,16 +100,6 @@ const Login = () => {
           >
             تسجيل الدخول
           </Typography>
-
-          {error && (
-            <Alert
-              severity="error"
-              sx={{ mb: 2, width: "100%" }}
-              className="arabic-text"
-            >
-              {error}
-            </Alert>
-          )}
 
           <Form onSubmit={handleSubmit(onSubmit)} noValidate>
             <TextField

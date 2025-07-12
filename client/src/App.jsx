@@ -28,6 +28,7 @@ import Settings from "./pages/Settings";
 // Auth context
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProfileComplete from "./pages/ProfileComplete";
+import { SnackbarProvider } from "./hooks/useSnackbar";
 
 // Create RTL cache
 const cacheRtl = createCache({
@@ -102,43 +103,45 @@ function App() {
         <CacheProvider value={cacheRtl}>
           <ThemeProvider theme={theme}>
             <LocalizationProvider dateAdapter={AdapterLuxon}>
-              <CssBaseline />
-              <BrowserRouter>
-                <Routes>
-                  {/* Auth Routes */}
-                  <Route element={<AuthLayout />}>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                  </Route>
-                  <Route
-                    path="/profile-complete"
-                    element={<ProfileComplete />}
-                  />
-                  {/* Protected Routes */}
-                  <Route
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout />
-                      </ProtectedRoute>
-                    }
-                  >
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/transactions" element={<Transactions />} />
+              <SnackbarProvider>
+                <CssBaseline />
+                <BrowserRouter>
+                  <Routes>
+                    {/* Auth Routes */}
+                    <Route element={<AuthLayout />}>
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                    </Route>
                     <Route
-                      path="/transaction/:type"
-                      element={<TransactionForm />}
+                      path="/profile-complete"
+                      element={<ProfileComplete />}
                     />
-                    <Route path="/clients" element={<Clients />} />
-                    <Route path="/clients/:id" element={<ClientDetails />} />
-                    <Route path="/earnings" element={<Earnings />} />
-                    <Route path="/settings" element={<Settings />} />
-                  </Route>
+                    {/* Protected Routes */}
+                    <Route
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout />
+                        </ProtectedRoute>
+                      }
+                    >
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/transactions" element={<Transactions />} />
+                      <Route
+                        path="/transaction/:type"
+                        element={<TransactionForm />}
+                      />
+                      <Route path="/clients" element={<Clients />} />
+                      <Route path="/clients/:id" element={<ClientDetails />} />
+                      <Route path="/earnings" element={<Earnings />} />
+                      <Route path="/settings" element={<Settings />} />
+                    </Route>
 
-                  {/* Redirect for unknown routes */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </BrowserRouter>
+                    {/* Redirect for unknown routes */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </BrowserRouter>
+              </SnackbarProvider>
             </LocalizationProvider>
           </ThemeProvider>
         </CacheProvider>

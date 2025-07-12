@@ -20,14 +20,13 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { CURRENCIES } from "../constants/currencies";
 import { userService, currencyService } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
+import { showSuccess, showError } from "../hooks/useSnackbar";
 
 const ProfileComplete = () => {
   const navigate = useNavigate();
   const { checkAuthStatus } = useAuth();
   const [selectedCurrencies, setSelectedCurrencies] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
 
   // Handle adding a new currency
   const handleAddCurrency = (event, newValue) => {
@@ -88,14 +87,12 @@ const ProfileComplete = () => {
     e.preventDefault();
 
     if (selectedCurrencies.length === 0) {
-      setError("يرجى اختيار عملة واحدة على الأقل");
+      showError("يرجى اختيار عملة واحدة على الأقل");
       return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
-      setError("");
-
       // Create currencies and set initial balances
       const promises = selectedCurrencies.map(async (currency) => {
         // Create currency with the expected payload structure
@@ -125,15 +122,13 @@ const ProfileComplete = () => {
       // Refresh auth state
       await checkAuthStatus();
 
-      setSuccess(true);
-
-      // Redirect to dashboard after successful setup
+      showSuccess("تم إعداد الحساب بنجاح! سيتم تحويلك إلى لوحة التحكم...");
       setTimeout(() => {
         navigate("/");
       }, 2000);
     } catch (err) {
       console.error("Profile setup failed:", err);
-      setError(err.response?.data?.data?.message || "فشل في إعداد الحساب");
+      showError(err.response?.data?.data?.message || "فشل في إعداد الحساب");
     } finally {
       setLoading(false);
     }
@@ -149,18 +144,6 @@ const ProfileComplete = () => {
           <Typography variant="subtitle1" gutterBottom align="center" mb={4}>
             يرجى اختيار العملات التي تتعامل بها وتعيين الأرصدة الأولية
           </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
-
-          {success && (
-            <Alert severity="success" sx={{ mb: 3 }}>
-              تم إعداد الحساب بنجاح! جاري تحويلك إلى لوحة التحكم...
-            </Alert>
-          )}
 
           <form onSubmit={handleSubmit}>
             <Box mb={4}>

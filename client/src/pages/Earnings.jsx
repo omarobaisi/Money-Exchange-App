@@ -40,14 +40,16 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { earningService, currencyService } from "../services/api";
+import { showSuccess, showError } from "../hooks/useSnackbar";
 
 // Validation schema
 const earningSchema = yup.object().shape({
   amount: yup
     .number()
+    .typeError("المبلغ يجب أن يكون رقمًا")
     .required("المبلغ مطلوب")
     .positive("المبلغ يجب أن يكون أكبر من صفر"),
-  currencyId: yup.number().required("العملة مطلوبة"),
+  currencyId: yup.number().typeError("العملة مطلوبة").required("العملة مطلوبة"),
   date: yup.date().required("التاريخ مطلوب"),
   description: yup.string(),
   type: yup.string().required("نوع الربح مطلوب"),
@@ -57,6 +59,7 @@ const EarningTypeMap = {
   commission: "عمولة",
   fee: "رسوم",
   spread: "فرق سعر",
+  exchange: "تحويل عملة",
   other: "أخرى",
 };
 
@@ -70,6 +73,8 @@ const getEarningTypeColor = (type) => {
       return "secondary";
     case "spread":
       return "success";
+    case "exchange":
+      return "info";
     default:
       return "default";
   }
@@ -145,6 +150,10 @@ const Earnings = () => {
         queryClient.invalidateQueries(["earnings"]);
         queryClient.invalidateQueries(["earningsByCurrency"]);
         reset();
+        showSuccess("تمت إضافة الربح بنجاح");
+      },
+      onError: () => {
+        showError("حدث خطأ أثناء إضافة الربح. يرجى المحاولة مرة أخرى.");
       },
     }
   );
@@ -157,6 +166,10 @@ const Earnings = () => {
         queryClient.invalidateQueries(["earnings"]);
         queryClient.invalidateQueries(["earningsByCurrency"]);
         resetForm();
+        showSuccess("تم تعديل الربح بنجاح");
+      },
+      onError: () => {
+        showError("حدث خطأ أثناء تعديل الربح. يرجى المحاولة مرة أخرى.");
       },
     }
   );
@@ -228,15 +241,23 @@ const Earnings = () => {
   };
 
   const onSubmit = (data) => {
-    const formattedData = {
-      ...data,
-      date: data.date.toISO(),
-    };
+    try {
+      const formattedData = {
+        ...data,
+        date:
+          typeof data.date?.toISO === "function"
+            ? data.date.toISO()
+            : data.date,
+      };
 
-    if (editMode) {
-      updateEarningMutation.mutate({ id: editId, data: formattedData });
-    } else {
-      createEarningMutation.mutate(formattedData);
+      if (editMode) {
+        updateEarningMutation.mutate({ id: editId, data: formattedData });
+      } else {
+        createEarningMutation.mutate(formattedData);
+      }
+    } catch (error) {
+      console.log("error", error);
+      showError("حدث خطأ أثناء حفظ البيانات. يرجى المحاولة مرة أخرى.");
     }
   };
 
@@ -350,6 +371,7 @@ const Earnings = () => {
                       InputLabelProps={{ className: "arabic-text" }}
                     >
                       <MenuItem value="commission">عمولة</MenuItem>
+                      <MenuItem value="exchange">تحويل عملة</MenuItem>
                       <MenuItem value="fee">رسوم</MenuItem>
                       <MenuItem value="spread">فرق سعر</MenuItem>
                       <MenuItem value="other">أخرى</MenuItem>
