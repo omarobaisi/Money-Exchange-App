@@ -1,5 +1,7 @@
 # Money Exchange Desktop Application
 
+## Note: this app is still a work in progress
+
 A desktop application for money exchange companies built with React, Electron, Node.js, Express, and MySQL.
 
 ## Project Structure
