@@ -21,20 +21,20 @@ import { transactionService } from "../services/api";
 
 // Movement types map
 const movementTypeMap = {
-  "buy-cash": {
-    label: "شراء نقدي",
+  "withdrawal-cash": {
+    label: "سحب نقدي",
     color: "error",
   },
-  "buy-check": {
-    label: "شراء شيك",
+  "withdrawal-check": {
+    label: "سحب شيك",
     color: "warning",
   },
-  "sell-cash": {
-    label: "بيع نقدي",
+  "deposit-cash": {
+    label: "إيداع نقدي",
     color: "secondary",
   },
-  "sell-check": {
-    label: "بيع شيك",
+  "deposit-check": {
+    label: "إيداع شيك",
     color: "info",
   },
 };
@@ -87,11 +87,11 @@ export default function Dashboard() {
               variant="contained"
               color="primary"
               fullWidth
-              onClick={() => navigate("/transaction/buy-cash")}
+              onClick={() => navigate("/transaction/withdrawal-cash")}
               className="arabic-text"
               sx={{ py: 1.5 }}
             >
-              شراء نقدي
+              سحب نقدي
             </Button>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -99,11 +99,11 @@ export default function Dashboard() {
               variant="contained"
               color="warning"
               fullWidth
-              onClick={() => navigate("/transaction/buy-check")}
+              onClick={() => navigate("/transaction/withdrawal-check")}
               className="arabic-text"
               sx={{ py: 1.5 }}
             >
-              شراء شيك
+              سحب شيك
             </Button>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -111,11 +111,11 @@ export default function Dashboard() {
               variant="contained"
               color="secondary"
               fullWidth
-              onClick={() => navigate("/transaction/sell-cash")}
+              onClick={() => navigate("/transaction/deposit-cash")}
               className="arabic-text"
               sx={{ py: 1.5 }}
             >
-              بيع نقدي
+              إيداع نقدي
             </Button>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -123,11 +123,11 @@ export default function Dashboard() {
               variant="contained"
               color="info"
               fullWidth
-              onClick={() => navigate("/transaction/sell-check")}
+              onClick={() => navigate("/transaction/deposit-check")}
               className="arabic-text"
               sx={{ py: 1.5 }}
             >
-              بيع شيك
+              إيداع شيك
             </Button>
           </Grid>
         </Grid>

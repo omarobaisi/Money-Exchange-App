@@ -20,6 +20,7 @@ import { Op } from "sequelize";
 
 /**
  * Helper function to calculate commission amount
+ * Commission is stored as decimal (e.g., 0.05 for 5%)
  */
 const calculateCommission = (amount, commission, movement) => {
   const isCheck = movement.includes("check");
@@ -118,7 +119,7 @@ const updateBalances = async (transactionData, operation, transaction) => {
   const custCheckBalance = parseFloat(customerCurrency.check_balance);
 
   // Determine transaction type
-  const isBuy = movement.includes("buy");
+  const isWithdrawal = movement.includes("withdrawal");
   const isCash = movement.includes("cash");
   const isCheck = movement.includes("check");
   const isCollection = movement === "check-collection";
@@ -131,8 +132,8 @@ const updateBalances = async (transactionData, operation, transaction) => {
   const multiplier = operation === "delete" ? -1 : 1;
 
   // Apply balance changes
-  if (isBuy) {
-    // Company buys from customer
+  if (isWithdrawal) {
+    // Customer withdraws from company
     if (isCash) {
       await myCurrency.update(
         {
@@ -170,7 +171,7 @@ const updateBalances = async (transactionData, operation, transaction) => {
       { transaction }
     );
   } else {
-    // Company sells to customer
+    // Customer deposits to company
     if (isCash) {
       await myCurrency.update(
         {

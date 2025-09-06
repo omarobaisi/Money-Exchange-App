@@ -63,20 +63,20 @@ const addCurrencySchema = yup.object().shape({
 
 // Movement types map
 const movementTypeMap = {
-  "buy-cash": {
-    label: "شراء نقدي",
+  "withdrawal-cash": {
+    label: "سحب نقدي",
     color: "error",
   },
-  "buy-check": {
-    label: "شراء شيك",
+  "withdrawal-check": {
+    label: "سحب شيك",
     color: "warning",
   },
-  "sell-cash": {
-    label: "بيع نقدي",
+  "deposit-cash": {
+    label: "إيداع نقدي",
     color: "secondary",
   },
-  "sell-check": {
-    label: "بيع شيك",
+  "deposit-check": {
+    label: "إيداع شيك",
     color: "info",
   },
 };
@@ -341,37 +341,37 @@ export default function ClientDetails() {
                       variant="contained"
                       color="primary"
                       size="small"
-                      onClick={() => navigate("/transaction/buy-cash")}
+                      onClick={() => navigate("/transaction/withdrawal-cash")}
                       className="arabic-text"
                     >
-                      شراء نقدي
+                      سحب نقدي
                     </Button>
                     <Button
                       variant="contained"
                       color="warning"
                       size="small"
-                      onClick={() => navigate("/transaction/buy-check")}
+                      onClick={() => navigate("/transaction/withdrawal-check")}
                       className="arabic-text"
                     >
-                      شراء شيك
+                      سحب شيك
                     </Button>
                     <Button
                       variant="contained"
                       color="secondary"
                       size="small"
-                      onClick={() => navigate("/transaction/sell-cash")}
+                      onClick={() => navigate("/transaction/deposit-cash")}
                       className="arabic-text"
                     >
-                      بيع نقدي
+                      إيداع نقدي
                     </Button>
                     <Button
                       variant="contained"
                       color="info"
                       size="small"
-                      onClick={() => navigate("/transaction/sell-check")}
+                      onClick={() => navigate("/transaction/deposit-check")}
                       className="arabic-text"
                     >
-                      بيع شيك
+                      إيداع شيك
                     </Button>
                   </Box>
                 </CardContent>
@@ -506,7 +506,7 @@ export default function ClientDetails() {
                         {transaction.amount.toLocaleString()}
                       </TableCell>
                       <TableCell>
-                        {transaction.commission?.toLocaleString() || "0"}
+                        {transaction.commission ? `${(transaction.commission * 100).toFixed(2)}%` : "0%"}
                       </TableCell>
                     </TableRow>
                   ))}

@@ -8,6 +8,8 @@ import {
   Grid,
   TextField,
   MenuItem,
+  InputAdornment,
+  Alert,
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -26,6 +28,7 @@ const EditTransactionModal = ({
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors },
     reset,
   } = useForm({
@@ -40,9 +43,29 @@ const EditTransactionModal = ({
     },
   });
 
+  // Watch amount and commission for calculation
+  const watchedAmount = watch("amount");
+  const watchedCommission = watch("commission");
+
+  // Calculate amount after commission
+  const calculateAmountAfterCommission = () => {
+    const amount = parseFloat(watchedAmount) || 0;
+    const commission = parseFloat(watchedCommission) || 0;
+    if (amount > 0 && commission > 0) {
+      const commissionAmount = (amount * commission) / 100;
+      return amount + commissionAmount;
+    }
+    return amount;
+  };
+
   useEffect(() => {
     if (open && initialValues) {
-      reset(initialValues);
+      // Convert commission from decimal to percentage for display
+      const formattedValues = {
+        ...initialValues,
+        commission: initialValues.commission ? initialValues.commission * 100 : 0,
+      };
+      reset(formattedValues);
     }
   }, [open, initialValues, reset]);
 
@@ -89,10 +112,10 @@ const EditTransactionModal = ({
                     helperText={errors.movement?.message}
                     InputLabelProps={{ className: "arabic-text" }}
                   >
-                    <MenuItem value="buy-cash">شراء نقدي</MenuItem>
-                    <MenuItem value="buy-check">شراء شيك</MenuItem>
-                    <MenuItem value="sell-cash">بيع نقدي</MenuItem>
-                    <MenuItem value="sell-check">بيع شيك</MenuItem>
+                    <MenuItem value="withdrawal-cash">سحب نقدي</MenuItem>
+                    <MenuItem value="withdrawal-check">سحب شيك</MenuItem>
+                    <MenuItem value="deposit-cash">إيداع نقدي</MenuItem>
+                    <MenuItem value="deposit-check">إيداع شيك</MenuItem>
                     <MenuItem value="check-collection">تحصيل شيك</MenuItem>
                   </TextField>
                 )}
@@ -110,21 +133,37 @@ const EditTransactionModal = ({
                 inputProps={{ min: 0, step: 0.01 }}
               />
             </Grid>
-            {(initialValues?.movement === "buy-check" ||
-              initialValues?.movement === "sell-check") && (
+            {(initialValues?.movement === "withdrawal-check" ||
+              initialValues?.movement === "deposit-check") && (
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="العمولة"
+                  label="نسبة العمولة"
                   type="number"
                   error={!!errors.commission}
                   helperText={errors.commission?.message}
                   {...register("commission")}
                   InputLabelProps={{ className: "arabic-text" }}
-                  inputProps={{ min: 0, step: 0.01 }}
+                  InputProps={{
+                    inputProps: { min: 0, max: 100, step: 0.01 },
+                    endAdornment: (
+                      <InputAdornment position="end">%</InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
             )}
+            
+            {(initialValues?.movement === "withdrawal-check" ||
+              initialValues?.movement === "deposit-check") &&
+              watchedAmount > 0 &&
+              watchedCommission > 0 && (
+                <Grid item xs={12}>
+                  <Alert severity="info" className="arabic-text">
+                    المبلغ بعد العمولة: {calculateAmountAfterCommission().toLocaleString()}
+                  </Alert>
+                </Grid>
+              )}
             <Grid item xs={12}>
               <TextField
                 fullWidth

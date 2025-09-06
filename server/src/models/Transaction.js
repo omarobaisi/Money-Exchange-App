@@ -25,7 +25,7 @@ const Transaction = sequelize.define(
       allowNull: false,
     },
     commission: {
-      type: DataTypes.DECIMAL(5, 2), // Changed from DECIMAL(2, 2) to support higher commission values
+      type: DataTypes.DECIMAL(5, 4), // Support percentage as decimal (e.g., 0.05 for 5%, max 99.99%)
       defaultValue: 0.0,
     },
     note: {
@@ -34,10 +34,10 @@ const Transaction = sequelize.define(
     },
     movement: {
       type: DataTypes.ENUM(
-        "buy-cash",
-        "sell-cash",
-        "buy-check",
-        "sell-check",
+        "withdrawal-cash",
+        "deposit-cash",
+        "withdrawal-check",
+        "deposit-check",
         "check-collection"
       ),
       allowNull: false,

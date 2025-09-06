@@ -46,20 +46,20 @@ import { showSuccess, showError } from "../hooks/useSnackbar";
 
 // Transaction movement types map
 const movementTypeMap = {
-  "buy-cash": {
-    label: "شراء نقدي",
+  "withdrawal-cash": {
+    label: "سحب نقدي",
     color: "#f44336",
   },
-  "buy-check": {
-    label: "شراء شيك",
+  "withdrawal-check": {
+    label: "سحب شيك",
     color: "#ff9800",
   },
-  "sell-cash": {
-    label: "بيع نقدي",
+  "deposit-cash": {
+    label: "إيداع نقدي",
     color: "#9c27b0",
   },
-  "sell-check": {
-    label: "بيع شيك",
+  "deposit-check": {
+    label: "إيداع شيك",
     color: "#673ab7",
   },
   "check-collection": {
@@ -217,9 +217,14 @@ const Transactions = () => {
   };
 
   const handleEditSubmitForm = (data) => {
+    // Convert commission from percentage to decimal
+    const formattedData = {
+      ...data,
+      commission: parseFloat(data.commission || 0) / 100,
+    };
     updateTransactionMutation.mutate({
       id: editingId,
-      data,
+      data: formattedData,
     });
     setEditModalOpen(false);
     setEditingId(null);
@@ -298,38 +303,38 @@ const Transactions = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate("/transaction/buy-cash")}
+              onClick={() => navigate("/transaction/withdrawal-cash")}
               sx={{ ml: 1 }}
               className="arabic-text"
             >
-              شراء نقدي
+              سحب نقدي
             </Button>
             <Button
               variant="contained"
               color="warning"
-              onClick={() => navigate("/transaction/buy-check")}
+              onClick={() => navigate("/transaction/withdrawal-check")}
               sx={{ ml: 1 }}
               className="arabic-text"
             >
-              شراء شيك
+              سحب شيك
             </Button>
             <Button
               variant="contained"
               color="secondary"
-              onClick={() => navigate("/transaction/sell-cash")}
+              onClick={() => navigate("/transaction/deposit-cash")}
               sx={{ ml: 1 }}
               className="arabic-text"
             >
-              بيع نقدي
+              إيداع نقدي
             </Button>
             <Button
               variant="contained"
               color="info"
-              onClick={() => navigate("/transaction/sell-check")}
+              onClick={() => navigate("/transaction/deposit-check")}
               sx={{ ml: 1 }}
               className="arabic-text"
             >
-              بيع شيك
+              إيداع شيك
             </Button>
           </Box>
         </Box>
@@ -392,10 +397,10 @@ const Transactions = () => {
                     <MenuItem value="">
                       <em>الكل</em>
                     </MenuItem>
-                    <MenuItem value="buy-cash">شراء نقدي</MenuItem>
-                    <MenuItem value="buy-check">شراء شيك</MenuItem>
-                    <MenuItem value="sell-cash">بيع نقدي</MenuItem>
-                    <MenuItem value="sell-check">بيع شيك</MenuItem>
+                    <MenuItem value="withdrawal-cash">سحب نقدي</MenuItem>
+                    <MenuItem value="withdrawal-check">سحب شيك</MenuItem>
+                    <MenuItem value="deposit-cash">إيداع نقدي</MenuItem>
+                    <MenuItem value="deposit-check">إيداع شيك</MenuItem>
                     <MenuItem value="check-collection">تحصيل شيك</MenuItem>
                   </TextField>
                 </Grid>
@@ -503,7 +508,7 @@ const Transactions = () => {
                         {transaction.amount.toLocaleString()}
                       </TableCell>
                       <TableCell>
-                        {transaction.commission?.toLocaleString() || "0"}
+                        {transaction.commission ? `${(transaction.commission * 100).toFixed(2)}%` : "0%"}
                       </TableCell>
                       <TableCell className="arabic-text">
                         {transaction.note || "-"}

@@ -7,7 +7,7 @@ export const transactionSchema = yup.object().shape({
     .number()
     .required("المبلغ مطلوب")
     .positive("المبلغ يجب أن يكون أكبر من صفر"),
-  commission: yup.number().min(0, "العمولة يجب أن تكون 0 أو أكبر").nullable(),
+  commission: yup.number().min(0, "العمولة يجب أن تكون 0 أو أكبر").max(100, "العمولة يجب أن تكون أقل من أو تساوي 100%").nullable(),
   date: yup.date().required("التاريخ مطلوب"),
   note: yup.string(),
 });

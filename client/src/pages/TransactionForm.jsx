@@ -9,6 +9,7 @@ import {
   Button,
   MenuItem,
   InputAdornment,
+  Alert,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { DateTime } from "luxon";
@@ -24,27 +25,27 @@ import { showSuccess, showError } from "../hooks/useSnackbar";
 
 // Define transaction type maps
 const transactionTypeMap = {
-  "buy-cash": {
-    label: "شراء نقدي",
-    movement: "buy-cash",
+  "withdrawal-cash": {
+    label: "سحب نقدي",
+    movement: "withdrawal-cash",
     icon: "💵",
     color: "#f44336",
   },
-  "buy-check": {
-    label: "شراء شيك",
-    movement: "buy-check",
+  "withdrawal-check": {
+    label: "سحب شيك",
+    movement: "withdrawal-check",
     icon: "📝",
     color: "#ff9800",
   },
-  "sell-cash": {
-    label: "بيع نقدي",
-    movement: "sell-cash",
+  "deposit-cash": {
+    label: "إيداع نقدي",
+    movement: "deposit-cash",
     icon: "💰",
     color: "#9c27b0",
   },
-  "sell-check": {
-    label: "بيع شيك",
-    movement: "sell-check",
+  "deposit-check": {
+    label: "إيداع شيك",
+    movement: "deposit-check",
     icon: "💳",
     color: "#673ab7",
   },
@@ -60,6 +61,7 @@ const TransactionForm = () => {
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(transactionSchema),
@@ -72,6 +74,21 @@ const TransactionForm = () => {
       note: "",
     },
   });
+
+  // Watch amount and commission for calculation
+  const watchedAmount = watch("amount");
+  const watchedCommission = watch("commission");
+
+  // Calculate amount after commission
+  const calculateAmountAfterCommission = () => {
+    const amount = parseFloat(watchedAmount) || 0;
+    const commission = parseFloat(watchedCommission) || 0;
+    if (amount > 0 && commission > 0) {
+      const commissionAmount = (amount * commission) / 100;
+      return amount + commissionAmount;
+    }
+    return amount;
+  };
 
   // Get transaction type details
   const transactionTypeDetails = transactionTypeMap[type] || {
@@ -115,7 +132,7 @@ const TransactionForm = () => {
         customerId: data.customerId,
         currencyId: data.currencyId,
         amount: parseFloat(data.amount),
-        commission: parseFloat(data.commission || 0),
+        commission: parseFloat(data.commission || 0) / 100,
         date: DateTime.fromJSDate(data.date).toISO(),
         note: data.note,
         movement: transactionTypeDetails.movement,
@@ -213,7 +230,7 @@ const TransactionForm = () => {
               />
             </Grid>
 
-            {(type === "buy-check" || type === "sell-check") && (
+            {(type === "withdrawal-check" || type === "deposit-check") && (
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
@@ -224,7 +241,6 @@ const TransactionForm = () => {
                   {...register("commission")}
                   InputLabelProps={{ className: "arabic-text" }}
                   InputProps={{
-                    inputProps: { min: 0, max: 1, step: 0.01 },
                     endAdornment: (
                       <InputAdornment position="end">%</InputAdornment>
                     ),
@@ -232,6 +248,17 @@ const TransactionForm = () => {
                 />
               </Grid>
             )}
+
+            {(type === "withdrawal-check" || type === "deposit-check") &&
+              watchedAmount > 0 &&
+              watchedCommission > 0 && (
+                <Grid item xs={12}>
+                  <Alert severity="info" className="arabic-text">
+                    المبلغ بعد العمولة:{" "}
+                    {calculateAmountAfterCommission().toLocaleString()}
+                  </Alert>
+                </Grid>
+              )}
 
             <Grid item xs={12} sm={6}>
               <Controller
