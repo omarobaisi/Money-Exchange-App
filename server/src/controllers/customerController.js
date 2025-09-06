@@ -26,7 +26,7 @@ export const getAllCustomers = async (req, res) => {
     console.error("Error fetching customers:", error);
     res.status(500).json({
       success: false,
-      message: "Error fetching customers",
+      message: "خطأ في جلب العملاء",
     });
   }
 };
@@ -41,7 +41,7 @@ export const createCustomer = async (req, res) => {
     if (!name) {
       return res.status(400).json({
         success: false,
-        message: "Customer name is required",
+        message: "اسم العميل مطلوب",
       });
     }
 

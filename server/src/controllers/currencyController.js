@@ -26,7 +26,7 @@ export const getAllCurrencies = async (req, res) => {
     console.error("Error fetching currencies:", error);
     res.status(500).json({
       success: false,
-      message: "Error fetching currencies",
+      message: "خطأ في جلب العملات",
     });
   }
 };
@@ -41,7 +41,7 @@ export const createCurrency = async (req, res) => {
     if (!currency) {
       return res.status(400).json({
         success: false,
-        message: "Currency name is required",
+        message: "اسم العملة مطلوب",
       });
     }
 
@@ -55,7 +55,7 @@ export const createCurrency = async (req, res) => {
     console.error("Error creating currency:", error);
     res.status(500).json({
       success: false,
-      message: "Error creating currency",
+      message: "خطأ في إنشاء العملة",
     });
   }
 };
@@ -83,7 +83,7 @@ export const getCompanyBalances = async (req, res) => {
     console.error("Error fetching company balances:", error);
     res.status(500).json({
       success: false,
-      message: "Error fetching company balances",
+      message: "خطأ في جلب أرصدة الشركة",
     });
   }
 };
@@ -108,7 +108,7 @@ export const getCompanyBalance = async (req, res) => {
     if (!balance) {
       return res.status(404).json({
         success: false,
-        message: "Balance not found for this currency",
+        message: "لم يتم العثور على رصيد لهذه العملة",
       });
     }
 
@@ -120,7 +120,7 @@ export const getCompanyBalance = async (req, res) => {
     console.error("Error fetching company balance:", error);
     res.status(500).json({
       success: false,
-      message: "Error fetching company balance",
+      message: "خطأ في جلب رصيد الشركة",
     });
   }
 };
@@ -171,7 +171,7 @@ export const updateCompanyBalance = async (req, res) => {
     console.error("Error updating company balance:", error);
     res.status(500).json({
       success: false,
-      message: "Error updating company balance",
+      message: "خطأ في تحديث رصيد الشركة",
     });
   }
 };
@@ -190,7 +190,7 @@ export const toggleCurrencyStar = async (req, res) => {
     if (!myCurrency) {
       return res.status(404).json({
         success: false,
-        message: "Currency balance not found",
+        message: "لم يتم العثور على رصيد العملة",
       });
     }
 
@@ -206,7 +206,7 @@ export const toggleCurrencyStar = async (req, res) => {
     console.error("Error toggling currency star:", error);
     res.status(500).json({
       success: false,
-      message: "Error toggling currency star",
+      message: "خطأ في تبديل نجمة العملة",
     });
   }
 };
@@ -224,7 +224,7 @@ export const adjustCompanyBalance = async (req, res) => {
     if (!currencyId || !balanceType || !adjustmentType || !amount) {
       return res.status(400).json({
         success: false,
-        message: "Currency, balance type, adjustment type, and amount are required",
+        message: "العملة ونوع الرصيد ونوع التعديل والمبلغ مطلوبة",
       });
     }
 
@@ -232,7 +232,7 @@ export const adjustCompanyBalance = async (req, res) => {
     if (!["cash", "check"].includes(balanceType)) {
       return res.status(400).json({
         success: false,
-        message: "Balance type must be either 'cash' or 'check'",
+        message: "نوع الرصيد يجب أن يكون إما 'نقدي' أو 'شيكات'",
       });
     }
 
@@ -240,7 +240,7 @@ export const adjustCompanyBalance = async (req, res) => {
     if (!["add", "remove"].includes(adjustmentType)) {
       return res.status(400).json({
         success: false,
-        message: "Adjustment type must be either 'add' or 'remove'",
+        message: "نوع التعديل يجب أن يكون إما 'إضافة' أو 'خصم'",
       });
     }
 
@@ -249,7 +249,7 @@ export const adjustCompanyBalance = async (req, res) => {
     if (adjustmentAmount <= 0) {
       return res.status(400).json({
         success: false,
-        message: "Amount must be greater than 0",
+        message: "المبلغ يجب أن يكون أكبر من 0",
       });
     }
 
@@ -258,7 +258,7 @@ export const adjustCompanyBalance = async (req, res) => {
     if (!currency) {
       return res.status(404).json({
         success: false,
-        message: "Currency not found",
+        message: "العملة غير موجودة",
       });
     }
 
@@ -288,7 +288,7 @@ export const adjustCompanyBalance = async (req, res) => {
         await transaction.rollback();
         return res.status(400).json({
           success: false,
-          message: `Insufficient ${balanceType} balance. Current balance: ${currentBalance}`,
+          message: `رصيد ${balanceType === 'cash' ? 'نقدي' : 'شيكات'} غير كافٍ. الرصيد الحالي: ${currentBalance}`,
         });
       }
     }
@@ -311,7 +311,7 @@ export const adjustCompanyBalance = async (req, res) => {
       {
         amount: adjustmentAmount,
         commission: 0,
-        note: note || `System balance adjustment: ${adjustmentType} ${adjustmentAmount} ${balanceType} balance`,
+        note: note || `تعديل رصيد الشركة: ${adjustmentType === 'add' ? 'إضافة' : 'خصم'} ${adjustmentAmount} ${balanceType === 'cash' ? 'رصيد نقدي' : 'رصيد شيكات'}`,
         movement: movementType,
         customer_id: null, // System adjustment, no customer
         currency_id: currencyId,
@@ -344,14 +344,14 @@ export const adjustCompanyBalance = async (req, res) => {
           newBalance,
         },
       },
-      message: `Successfully ${adjustmentType}ed ${adjustmentAmount} to ${balanceType} balance`,
+      message: `تم ${adjustmentType === 'add' ? 'إضافة' : 'خصم'} ${adjustmentAmount} ${balanceType === 'cash' ? 'للرصيد النقدي' : 'لرصيد الشيكات'} بنجاح`,
     });
   } catch (error) {
     await transaction.rollback();
     console.error("Error adjusting company balance:", error);
     res.status(500).json({
       success: false,
-      message: "Error adjusting company balance",
+      message: "خطأ في تعديل رصيد الشركة",
     });
   }
 };

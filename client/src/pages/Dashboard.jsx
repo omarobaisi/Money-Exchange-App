@@ -200,10 +200,13 @@ export default function Dashboard() {
                 transactionsData?.data?.data?.map((transaction) => (
                   <TableRow key={transaction._id}>
                     <TableCell>
-                      {/* {transaction.customer.name} */}
-                      <Link to={`/clients/${transaction.customer._id}`}>
-                        {transaction.customer.name}
-                      </Link>
+                      {transaction.customer ? (
+                        <Link to={`/clients/${transaction.customer._id}`}>
+                          {transaction.customer.name}
+                        </Link>
+                      ) : (
+                        <span className="arabic-text" style={{ color: '#666' }}>الشركة</span>
+                      )}
                     </TableCell>
                     <TableCell>{transaction.currency.currency}</TableCell>
                     <TableCell>
