@@ -7,7 +7,7 @@
  * - Getting customer balance information
  */
 
-import { Customer, CustomerCurrency, Currency } from "../models/index.js";
+import { Customer, CustomerCurrency, Currency, Transaction, sequelize } from "../models/index.js";
 
 /**
  * Get all customers
@@ -351,6 +351,166 @@ export const getCustomer = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching customer",
+    });
+  }
+};
+
+/**
+ * Adjust client balance (add/remove cash or check balance)
+ */
+export const adjustClientBalance = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const { customerId, currencyId, balanceType, adjustmentType, amount, note } = req.body;
+
+    // Validate required fields
+    if (!customerId || !currencyId || !balanceType || !adjustmentType || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: "Customer, currency, balance type, adjustment type, and amount are required",
+      });
+    }
+
+    // Validate balance type
+    if (!["cash", "check"].includes(balanceType)) {
+      return res.status(400).json({
+        success: false,
+        message: "Balance type must be either 'cash' or 'check'",
+      });
+    }
+
+    // Validate adjustment type
+    if (!["add", "remove"].includes(adjustmentType)) {
+      return res.status(400).json({
+        success: false,
+        message: "Adjustment type must be either 'add' or 'remove'",
+      });
+    }
+
+    // Validate amount
+    const adjustmentAmount = parseFloat(amount);
+    if (adjustmentAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Amount must be greater than 0",
+      });
+    }
+
+    // Check if customer exists
+    const customer = await Customer.findByPk(customerId);
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Customer not found",
+      });
+    }
+
+    // Check if currency exists
+    const currency = await Currency.findByPk(currencyId);
+    if (!currency) {
+      return res.status(404).json({
+        success: false,
+        message: "Currency not found",
+      });
+    }
+
+    // Get or create customer balance for this currency
+    const [customerCurrency, created] = await CustomerCurrency.findOrCreate({
+      where: {
+        customer_id: customerId,
+        currency_id: currencyId,
+      },
+      defaults: {
+        balance: 0.0,
+        check_balance: 0.0,
+        star: false,
+      },
+      transaction,
+    });
+
+    // Calculate new balance
+    const currentBalance = parseFloat(
+      balanceType === "cash" ? customerCurrency.balance : customerCurrency.check_balance
+    );
+    
+    let newBalance;
+    if (adjustmentType === "add") {
+      newBalance = currentBalance + adjustmentAmount;
+    } else {
+      newBalance = currentBalance - adjustmentAmount;
+      // Check for negative balance
+      if (newBalance < 0) {
+        await transaction.rollback();
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient ${balanceType} balance. Current balance: ${currentBalance}`,
+        });
+      }
+    }
+
+    // Update the balance
+    const updateData = {};
+    if (balanceType === "cash") {
+      updateData.balance = newBalance;
+    } else {
+      updateData.check_balance = newBalance;
+    }
+
+    await customerCurrency.update(updateData, { transaction });
+
+    // Determine movement type for transaction history
+    const movementType = `balance-adjustment-${balanceType}-${adjustmentType}`;
+
+    // Create transaction record for history
+    await Transaction.create(
+      {
+        amount: adjustmentAmount,
+        commission: 0,
+        note: note || `Client balance adjustment: ${adjustmentType} ${adjustmentAmount} ${balanceType} balance for ${customer.name}`,
+        movement: movementType,
+        customer_id: customerId,
+        currency_id: currencyId,
+      },
+      { transaction }
+    );
+
+    await transaction.commit();
+
+    // Fetch updated balance with currency info
+    const updatedBalance = await CustomerCurrency.findOne({
+      where: {
+        customer_id: customerId,
+        currency_id: currencyId,
+      },
+      include: [
+        {
+          model: Currency,
+          as: "currency",
+        },
+      ],
+    });
+
+    res.json({
+      success: true,
+      data: {
+        balance: updatedBalance,
+        adjustment: {
+          type: adjustmentType,
+          balanceType,
+          amount: adjustmentAmount,
+          previousBalance: currentBalance,
+          newBalance,
+        },
+      },
+      message: `Successfully ${adjustmentType}ed ${adjustmentAmount} to ${customer.name}'s ${balanceType} balance`,
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Error adjusting client balance:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error adjusting client balance",
     });
   }
 };

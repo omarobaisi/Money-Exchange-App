@@ -33,6 +33,7 @@ export const currencyService = {
   updateCompanyBalance: (id, data) =>
     axios.put(`${API_URL}/currencies/${id}/balance`, data),
   toggleCurrencyStar: (id) => axios.put(`${API_URL}/currencies/${id}/star`),
+  adjustCompanyBalance: (data) => axios.post(`${API_URL}/currencies/adjust-balance`, data),
 };
 
 // Customer Services
@@ -51,6 +52,7 @@ export const customerService = {
     ),
   toggleCustomerCurrencyStar: (id, currencyId) =>
     axios.put(`${API_URL}/customers/${id}/balances/${currencyId}/star`),
+  adjustClientBalance: (data) => axios.post(`${API_URL}/customers/adjust-balance`, data),
 };
 
 // Transaction Services

@@ -18,6 +18,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import BalanceAdjustment from "./pages/BalanceAdjustment";
 import Transactions from "./pages/Transactions";
 import TransactionForm from "./pages/TransactionForm";
 import Clients from "./pages/Clients";
@@ -126,6 +127,7 @@ function App() {
                     >
                       <Route path="/" element={<Dashboard />} />
                       <Route path="/profile" element={<Profile />} />
+                      <Route path="/balance-adjustment" element={<BalanceAdjustment />} />
                       <Route path="/transactions" element={<Transactions />} />
                       <Route
                         path="/transaction/:type"

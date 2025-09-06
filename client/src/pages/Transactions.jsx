@@ -66,6 +66,22 @@ const movementTypeMap = {
     label: "تحصيل شيك",
     color: "#2196f3",
   },
+  "balance-adjustment-cash-add": {
+    label: "إضافة رصيد نقدي",
+    color: "#4caf50",
+  },
+  "balance-adjustment-cash-remove": {
+    label: "خصم رصيد نقدي", 
+    color: "#f44336",
+  },
+  "balance-adjustment-check-add": {
+    label: "إضافة رصيد شيكات",
+    color: "#4caf50",
+  },
+  "balance-adjustment-check-remove": {
+    label: "خصم رصيد شيكات",
+    color: "#f44336",
+  },
 };
 
 const getMovementLabel = (movement) =>
@@ -182,17 +198,30 @@ const Transactions = () => {
 
   const handleEdit = () => {
     if (selectedTransaction && transactionsData?.data?.data) {
-      setEditingId(selectedTransaction._id);
       const transaction = transactionsData.data.data.find(
         (t) => t._id === selectedTransaction._id
       );
+      
       if (transaction) {
+        // Check if this is a balance adjustment transaction
+        const isBalanceAdjustment = transaction.movement.startsWith('balance-adjustment');
+        
+        if (isBalanceAdjustment) {
+          // For balance adjustment transactions, redirect to balance adjustment page
+          // or show a message that these should be edited via the balance adjustment system
+          showError("يجب تعديل معاملات تعديل الرصيد من خلال صفحة تعديل الأرصدة");
+          handleCloseMenu();
+          return;
+        }
+        
+        // For regular transactions, proceed with normal edit
+        setEditingId(selectedTransaction._id);
         setEditInitialValues({
           amount: transaction.amount,
           commission: transaction.commission || 0,
           note: transaction.note || "",
           movement: transaction.movement,
-          customerId: transaction.customer._id,
+          customerId: transaction.customer?._id || "",
           currencyId: transaction.currency._id,
           created: transaction.created,
           date: transaction.created,
@@ -205,8 +234,25 @@ const Transactions = () => {
 
   const handleDelete = () => {
     if (selectedTransaction) {
-      setTransactionToDelete(selectedTransaction);
-      setOpenDeleteDialog(true);
+      const transaction = transactionsData.data.data.find(
+        (t) => t._id === selectedTransaction._id
+      );
+      
+      if (transaction) {
+        // Check if this is a balance adjustment transaction
+        const isBalanceAdjustment = transaction.movement.startsWith('balance-adjustment');
+        
+        if (isBalanceAdjustment) {
+          // For balance adjustment transactions, show a confirmation but allow deletion
+          // These transactions can be deleted but should be handled carefully
+          setTransactionToDelete(selectedTransaction);
+          setOpenDeleteDialog(true);
+        } else {
+          // For regular transactions, proceed with normal delete
+          setTransactionToDelete(selectedTransaction);
+          setOpenDeleteDialog(true);
+        }
+      }
     }
     handleCloseMenu();
   };
@@ -402,6 +448,10 @@ const Transactions = () => {
                     <MenuItem value="deposit-cash">إيداع نقدي</MenuItem>
                     <MenuItem value="deposit-check">إيداع شيك</MenuItem>
                     <MenuItem value="check-collection">تحصيل شيك</MenuItem>
+                    <MenuItem value="balance-adjustment-cash-add">إضافة رصيد نقدي</MenuItem>
+                    <MenuItem value="balance-adjustment-cash-remove">خصم رصيد نقدي</MenuItem>
+                    <MenuItem value="balance-adjustment-check-add">إضافة رصيد شيكات</MenuItem>
+                    <MenuItem value="balance-adjustment-check-remove">خصم رصيد شيكات</MenuItem>
                   </TextField>
                 </Grid>
 
@@ -483,9 +533,13 @@ const Transactions = () => {
                     <TableRow key={transaction._id}>
                       {/* Only view mode, remove isEditing logic */}
                       <TableCell>
-                        <Link to={`/clients/${transaction.customer._id}`}>
-                          {transaction.customer.name}
-                        </Link>
+                        {transaction.customer ? (
+                          <Link to={`/clients/${transaction.customer._id}`}>
+                            {transaction.customer.name}
+                          </Link>
+                        ) : (
+                          <span className="arabic-text" style={{ color: '#666' }}>الشركة</span>
+                        )}
                       </TableCell>
                       <TableCell>{transaction.currency.currency}</TableCell>
                       <TableCell>

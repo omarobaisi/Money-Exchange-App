@@ -30,6 +30,7 @@ import {
   Person as PersonIcon,
   ChevronRight as ChevronRightIcon,
   ChevronLeft as ChevronLeftIcon,
+  AccountBalance as BalanceIcon,
 } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -39,6 +40,7 @@ const collapsedDrawerWidth = 65;
 const menuItems = [
   { text: "لوحة التحكم", icon: <DashboardIcon />, path: "/" },
   { text: "الحساب الشخصي", icon: <WalletIcon />, path: "/profile" },
+  { text: "تعديل الأرصدة", icon: <BalanceIcon />, path: "/balance-adjustment" },
   { text: "المعاملات", icon: <TransactionsIcon />, path: "/transactions" },
   { text: "العملاء", icon: <ClientsIcon />, path: "/clients" },
   { text: "الأرباح", icon: <EarningsIcon />, path: "/earnings" },

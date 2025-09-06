@@ -12,6 +12,7 @@ import {
   getCompanyBalance,
   updateCompanyBalance,
   toggleCurrencyStar,
+  adjustCompanyBalance,
 } from "../controllers/currencyController.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 
@@ -61,5 +62,12 @@ router.put("/:currencyId/balance", updateCompanyBalance);
  * @access Private
  */
 router.put("/:currencyId/star", toggleCurrencyStar);
+
+/**
+ * @route POST /api/currencies/adjust-balance
+ * @desc Adjust company balance (add/remove cash or check balance)
+ * @access Private
+ */
+router.post("/adjust-balance", adjustCompanyBalance);
 
 export default router;

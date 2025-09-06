@@ -38,7 +38,11 @@ const Transaction = sequelize.define(
         "deposit-cash",
         "withdrawal-check",
         "deposit-check",
-        "check-collection"
+        "check-collection",
+        "balance-adjustment-cash-add",
+        "balance-adjustment-cash-remove",
+        "balance-adjustment-check-add",
+        "balance-adjustment-check-remove"
       ),
       allowNull: false,
     },
@@ -48,7 +52,7 @@ const Transaction = sequelize.define(
     },
     customer_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true, // Allow null for system-level balance adjustments
       field: "customer_id",
       references: {
         model: Customer,

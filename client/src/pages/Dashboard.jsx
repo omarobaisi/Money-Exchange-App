@@ -37,6 +37,22 @@ const movementTypeMap = {
     label: "إيداع شيك",
     color: "info",
   },
+  "balance-adjustment-cash-add": {
+    label: "إضافة رصيد نقدي",
+    color: "success",
+  },
+  "balance-adjustment-cash-remove": {
+    label: "خصم رصيد نقدي", 
+    color: "error",
+  },
+  "balance-adjustment-check-add": {
+    label: "إضافة رصيد شيكات",
+    color: "success",
+  },
+  "balance-adjustment-check-remove": {
+    label: "خصم رصيد شيكات",
+    color: "error",
+  },
 };
 
 export default function Dashboard() {
@@ -82,7 +98,19 @@ export default function Dashboard() {
           إجراءات سريعة
         </Typography>
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Button
+              variant="contained"
+              color="success"
+              fullWidth
+              onClick={() => navigate("/balance-adjustment")}
+              className="arabic-text"
+              sx={{ py: 1.5 }}
+            >
+              تعديل الأرصدة
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={6} md={2.4}>
             <Button
               variant="contained"
               color="primary"
@@ -94,7 +122,7 @@ export default function Dashboard() {
               سحب نقدي
             </Button>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2.4}>
             <Button
               variant="contained"
               color="warning"
@@ -106,7 +134,7 @@ export default function Dashboard() {
               سحب شيك
             </Button>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2.4}>
             <Button
               variant="contained"
               color="secondary"
@@ -118,7 +146,7 @@ export default function Dashboard() {
               إيداع نقدي
             </Button>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2.4}>
             <Button
               variant="contained"
               color="info"

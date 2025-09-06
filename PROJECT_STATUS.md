@@ -46,10 +46,16 @@
 - ✅ Commission tracking and reporting
 - ✅ Monthly profit summaries
 
+### Company Balance Adjustment System:
+
+- ✅ Add/remove money from company cash and check balances for specific currencies
+- ✅ Auto-create currency if it doesn't exist in company accounts
+- ✅ Accessible from dashboard and sidebar
+
 ## TODO
 
-- ✅ Change the naming of transaction from (buy-sell) to (withdrawal and deposit)
-- ✅ Make the transaction commission a percentage and show the amount after the commission under it
+- ⏳ Reset the account and test deposit and withdraw transactions
+- ⏳ Text balance adjustment creation and editing
 
 ## Future Features
 

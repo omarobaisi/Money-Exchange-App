@@ -17,6 +17,7 @@ import {
   updateCustomer,
   deleteCustomer,
   toggleCustomerCurrencyStar,
+  adjustClientBalance,
 } from "../controllers/customerController.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 
@@ -100,6 +101,13 @@ router.put(
   "/:customerId/balances/:currencyId/star",
   toggleCustomerCurrencyStar
 );
+
+/**
+ * @route POST /api/customers/adjust-balance
+ * @desc Adjust client balance (add/remove cash or check balance)
+ * @access Private
+ */
+router.post("/adjust-balance", adjustClientBalance);
 
 /**
  * @route GET /api/customers/count

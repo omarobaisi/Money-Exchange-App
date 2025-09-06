@@ -79,6 +79,22 @@ const movementTypeMap = {
     label: "إيداع شيك",
     color: "info",
   },
+  "balance-adjustment-cash-add": {
+    label: "إضافة رصيد نقدي",
+    color: "success",
+  },
+  "balance-adjustment-cash-remove": {
+    label: "خصم رصيد نقدي", 
+    color: "error",
+  },
+  "balance-adjustment-check-add": {
+    label: "إضافة رصيد شيكات",
+    color: "success",
+  },
+  "balance-adjustment-check-remove": {
+    label: "خصم رصيد شيكات",
+    color: "error",
+  },
 };
 
 export default function ClientDetails() {
